@@ -1,0 +1,12 @@
+{
+  "crons": [
+    {
+      "path": "/api/cron/mark-overdue",
+      "schedule": "0 6 * * *"
+    },
+    {
+      "path": "/api/cron/end-of-day-summary",
+      "schedule": "0 18 * * 1-5"
+    }
+  ]
+}
