@@ -19,8 +19,8 @@ export function ResetPasswordDialog({ staffId, name }: { staffId: string; name: 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
-        <Button size="sm" variant="ghost" aria-label={`Reset password for ${name}`}>
-          <KeyRound className="h-3.5 w-3.5" />
+        <Button size="sm" variant="outline" aria-label={`Reset password for ${name}`}>
+          <KeyRound className="h-3.5 w-3.5" /> Reset
         </Button>
       </DialogTrigger>
       <DialogContent>

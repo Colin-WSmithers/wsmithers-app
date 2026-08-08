@@ -81,7 +81,7 @@ export default async function TodayPage() {
 
                     <div className="grid grid-cols-2 gap-2 pt-1 sm:grid-cols-4">
                       <Button asChild size="sm" variant="primary">
-                        <Link href="/timesheets">
+                        <Link href={appt.job ? `/timesheets?job=${appt.job.id}` : "/timesheets"}>
                           <Play className="h-3.5 w-3.5" /> Clock in
                         </Link>
                       </Button>
