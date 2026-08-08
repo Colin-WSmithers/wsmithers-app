@@ -35,6 +35,7 @@ export async function startShiftAction(_prevState: FormState, formData: FormData
   });
 
   if (error) {
+    console.error("[startShiftAction] insert failed for profile", profile.id, "job", parsed.data.job_id, error);
     // 23505 here means the one-open-shift-per-profile unique index caught a
     // duplicate the getOpenTimesheet() check above missed (e.g. a stale
     // read) — treat it the same as "already clocked in" instead of a

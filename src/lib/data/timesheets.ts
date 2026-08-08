@@ -35,7 +35,7 @@ const TIMESHEET_SELECT =
 /** The signed-in tradesperson's currently open (clocked-in) shift, if any. */
 export async function getOpenTimesheet(profileId: string): Promise<TimesheetRow | null> {
   const supabase = await createClient();
-  const { data } = await supabase
+  const { data, error } = await supabase
     .from("timesheets")
     .select(TIMESHEET_SELECT)
     .eq("profile_id", profileId)
@@ -43,6 +43,17 @@ export async function getOpenTimesheet(profileId: string): Promise<TimesheetRow 
     .order("started_at", { ascending: false })
     .limit(1)
     .maybeSingle();
+
+  // Every previous "clock-in does nothing" theory (caching, inner-join-vs-
+  // RLS) assumed this query was quietly returning zero rows. It's never
+  // once been confirmed, because the error from this call was never
+  // actually looked at — only `data` was read, so if the query itself
+  // failed (RLS, a bad embed, anything) it silently looked identical to
+  // "no open shift". Logging it here means the *real* reason shows up in
+  // Vercel's function logs on the very next clock-in attempt.
+  if (error) {
+    console.error("[getOpenTimesheet] query failed for profile", profileId, error);
+  }
 
   return (data as unknown as TimesheetRow) ?? null;
 }
