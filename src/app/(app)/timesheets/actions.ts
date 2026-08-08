@@ -35,6 +35,15 @@ export async function startShiftAction(_prevState: FormState, formData: FormData
   });
 
   if (error) {
+    // 23505 here means the one-open-shift-per-profile unique index caught a
+    // duplicate the getOpenTimesheet() check above missed (e.g. a stale
+    // read) — treat it the same as "already clocked in" instead of a
+    // generic failure, since that's what actually happened.
+    if (error.code === "23505") {
+      revalidatePath("/timesheets");
+      revalidatePath("/today");
+      return { error: "You're already clocked in — refresh the page and end that shift first." };
+    }
     return { error: "Could not clock in — you may not be assigned to this job." };
   }
 
