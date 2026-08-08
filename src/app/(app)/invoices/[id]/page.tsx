@@ -1,9 +1,10 @@
 import { notFound, redirect } from "next/navigation";
 import Link from "next/link";
-import { Mail, Phone } from "lucide-react";
+import { Mail, Phone, Printer } from "lucide-react";
 import { getInvoiceById } from "@/lib/data/invoices";
 import { requireProfile, isOfficeOrAdmin } from "@/lib/data/auth";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from "@/components/ui/table";
 import { formatCurrencyGBP, formatDateUK } from "@/lib/utils";
@@ -42,6 +43,11 @@ export default async function InvoiceDetailPage({ params }: { params: Promise<{ 
             {invoice.status.replace(/_/g, " ")}
           </Badge>
           <InvoiceStatusSelect invoiceId={invoice.id} currentStatus={invoice.status} />
+          <Button asChild size="sm" variant="outline">
+            <Link href={`/invoices/${invoice.id}/print`}>
+              <Printer className="h-3.5 w-3.5" /> Print / PDF
+            </Link>
+          </Button>
           {outstanding > 0 && invoice.status !== "void" && invoice.status !== "draft" && (
             <RecordPaymentDialog invoiceId={invoice.id} outstanding={outstanding} />
           )}

@@ -134,6 +134,53 @@ body {
   animation: shimmer 1.6s infinite;
 }
 
+/* ---------------------------------------------------------------------------
+   Print / Save-as-PDF
+   The quote and invoice print routes are the documents that actually go to a
+   customer, so they get real A4 page setup: app chrome hidden, colours forced
+   on (browsers strip backgrounds by default), and no rows split across pages.
+   --------------------------------------------------------------------------- */
+@media print {
+  @page {
+    size: A4;
+    margin: 14mm 12mm;
+  }
+
+  html, body {
+    background: #fff !important;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+
+  /* Hide the app shell — sidebar, topbar, mobile nav, and any control that
+     only makes sense on screen. */
+  aside, header, nav, .no-print {
+    display: none !important;
+  }
+
+  main {
+    padding: 0 !important;
+  }
+
+  .print-page {
+    max-width: none !important;
+    margin: 0 !important;
+    box-shadow: none !important;
+  }
+
+  tr, .break-inside-avoid {
+    break-inside: avoid;
+  }
+
+  thead {
+    display: table-header-group; /* repeat headers on every page */
+  }
+
+  a[href]::after {
+    content: none !important; /* don't append raw URLs */
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after {
     animation-duration: 0.01ms !important;

@@ -9,11 +9,17 @@ import type { DailySummary } from "@/lib/supabase/types";
  * so a tradesperson calling this simply gets null rather than needing a
  * role check here. Returns null before the cron has ever run.
  */
-export async function getLatestDailySummary(): Promise<DailySummary | null> {
+export async function getLatestDailySummary(
+  kind: "operations" | "financial" = "financial"
+): Promise<DailySummary | null> {
   const supabase = await createClient();
+  // RLS decides visibility: 'operations' is readable by every signed-in staff
+  // member, 'financial' only by office/admin — so a tradesperson asking for
+  // the financial one simply gets null.
   const { data } = await supabase
     .from("daily_summaries")
     .select("*")
+    .eq("kind", kind)
     .order("summary_date", { ascending: false })
     .limit(1)
     .maybeSingle();

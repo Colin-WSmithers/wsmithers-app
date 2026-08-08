@@ -296,9 +296,12 @@ export type Notification = {
   created_at: string;
 };
 
+export type DailySummaryKind = "operations" | "financial";
+
 export type DailySummary = {
   id: string;
   summary_date: string;
+  kind: DailySummaryKind;
   content: string;
   stats: Record<string, unknown> | null;
   generated_at: string;

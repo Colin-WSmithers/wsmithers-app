@@ -1,8 +1,9 @@
 import { notFound, redirect } from "next/navigation";
 import Link from "next/link";
-import { Mail, Phone } from "lucide-react";
+import { Mail, Phone, Printer } from "lucide-react";
 import { getPurchaseOrderById } from "@/lib/data/purchase-orders";
 import { requireProfile, isOfficeOrAdmin } from "@/lib/data/auth";
+import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from "@/components/ui/table";
 import { formatCurrencyGBP, formatDateUK } from "@/lib/utils";
@@ -31,7 +32,14 @@ export default async function PurchaseOrderDetailPage({ params }: { params: Prom
             )}
           </p>
         </div>
-        <PoStatusSelect poId={po.id} currentStatus={po.status} />
+        <div className="flex flex-col items-start gap-2 sm:items-end">
+          <PoStatusSelect poId={po.id} currentStatus={po.status} />
+          <Button asChild size="sm" variant="outline">
+            <Link href={`/purchase-orders/${po.id}/print`}>
+              <Printer className="h-3.5 w-3.5" /> Print / PDF
+            </Link>
+          </Button>
+        </div>
       </div>
 
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">

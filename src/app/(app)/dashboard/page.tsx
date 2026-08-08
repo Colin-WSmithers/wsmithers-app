@@ -1,16 +1,17 @@
 import Link from "next/link";
 import {
-  Briefcase, Users2, FileText, Receipt, Inbox, Plus, ClipboardList, Sparkles, ArrowRight,
+  Briefcase, Users2, FileText, Receipt, Inbox, Plus, ClipboardList, ArrowRight,
 } from "lucide-react";
 import { requireProfile, canViewFinancials } from "@/lib/data/auth";
 import { getDashboardData, getLatestDailySummary } from "@/lib/data/dashboard";
 import { StatCard } from "@/components/shared/stat-card";
 import { EmptyState } from "@/components/shared/empty-state";
 import { PageHeader } from "@/components/shared/page-header";
+import { SummaryCard } from "@/components/shared/summary-card";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { formatCurrencyGBP, formatDateTimeUK, formatDateUK } from "@/lib/utils";
+import { formatCurrencyGBP, formatDateTimeUK } from "@/lib/utils";
 
 const STATUS_TONE: Record<string, "default" | "secondary" | "success" | "warning" | "destructive" | "info"> = {
   draft: "secondary",
@@ -46,9 +47,10 @@ function greeting(): string {
 export default async function DashboardPage() {
   const profile = await requireProfile();
   const showFinancials = canViewFinancials(profile.role);
-  const [data, latestSummary] = await Promise.all([
+  const [data, opsSummary, financialSummary] = await Promise.all([
     getDashboardData(),
-    showFinancials ? getLatestDailySummary() : Promise.resolve(null),
+    getLatestDailySummary("operations"),
+    showFinancials ? getLatestDailySummary("financial") : Promise.resolve(null),
   ]);
 
   return (
@@ -101,35 +103,23 @@ export default async function DashboardPage() {
         )}
       </div>
 
+      {/* The job rundown is the one everybody reads, so it leads. */}
+      <SummaryCard
+        title="Today on the jobs"
+        summary={opsSummary}
+        canGenerate={showFinancials}
+        emptyDescription="At the end of each day this writes up what happened on every job, from the notes the crew log on site and the hours they book."
+      />
+
       <div className="grid grid-cols-1 gap-4 xl:grid-cols-5">
         {showFinancials && (
-          <Card className="xl:col-span-2">
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <span className="flex h-6 w-6 items-center justify-center rounded-md bg-brand-50">
-                  <Sparkles className="h-3.5 w-3.5 text-brand-600" />
-                </span>
-                End-of-day summary
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              {latestSummary ? (
-                <div className="flex flex-col gap-2">
-                  <p className="text-sm leading-relaxed text-ink-700">{latestSummary.content}</p>
-                  <p className="text-xs text-ink-400">
-                    For {formatDateUK(latestSummary.summary_date)} · generated{" "}
-                    {formatDateTimeUK(latestSummary.generated_at)}
-                  </p>
-                </div>
-              ) : (
-                <EmptyState
-                  icon={Sparkles}
-                  title="No summary yet"
-                  description="A short AI recap of jobs, hours and money is written automatically at the end of each working day."
-                />
-              )}
-            </CardContent>
-          </Card>
+          <SummaryCard
+            className="xl:col-span-2"
+            title="Money today"
+            summary={financialSummary}
+            canGenerate={false}
+            emptyDescription="Quotes, invoices, payments and anything overdue — written at the end of each working day. Office and admin only."
+          />
         )}
 
         <Card className={showFinancials ? "xl:col-span-3" : "xl:col-span-5"}>

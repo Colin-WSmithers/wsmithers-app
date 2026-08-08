@@ -1,6 +1,6 @@
 import { notFound } from "next/navigation";
 import Link from "next/link";
-import { MapPin, User, ListChecks, StickyNote, Camera, FolderOpen, Users, Star, Clock, Wallet, Receipt } from "lucide-react";
+import { MapPin, User, ListChecks, StickyNote, Camera, FolderOpen, Users, Star, Clock, Wallet, Receipt, Printer } from "lucide-react";
 import { getJobById, listJobAssignments } from "@/lib/data/jobs";
 import { listJobTasks } from "@/lib/data/job-tasks";
 import { listJobNotes } from "@/lib/data/job-notes";
@@ -87,14 +87,24 @@ export default async function JobDetailPage({ params }: { params: Promise<{ id: 
         {office ? (
           <div className="flex flex-col items-start gap-2 sm:items-end">
             <JobStatusSelect jobId={job.id} currentStatus={job.status} />
-            <Button asChild size="sm" variant="outline">
-              <Link href={`/invoices/new?job_id=${job.id}`}><Receipt className="h-3.5 w-3.5" /> Create invoice</Link>
-            </Button>
+            <div className="flex flex-wrap gap-2">
+              <Button asChild size="sm" variant="outline">
+                <Link href={`/jobs/${job.id}/print`}><Printer className="h-3.5 w-3.5" /> Job sheet</Link>
+              </Button>
+              <Button asChild size="sm" variant="outline">
+                <Link href={`/invoices/new?job_id=${job.id}`}><Receipt className="h-3.5 w-3.5" /> Create invoice</Link>
+              </Button>
+            </div>
           </div>
         ) : (
-          <Badge variant={STATUS_TONE[job.status] ?? "secondary"} className="w-fit capitalize">
-            {job.status.replace(/_/g, " ")}
-          </Badge>
+          <div className="flex flex-col items-start gap-2 sm:items-end">
+            <Button asChild size="sm" variant="outline">
+              <Link href={`/jobs/${job.id}/print`}><Printer className="h-3.5 w-3.5" /> Job sheet</Link>
+            </Button>
+            <Badge variant={STATUS_TONE[job.status] ?? "secondary"} className="w-fit capitalize">
+              {job.status.replace(/_/g, " ")}
+            </Badge>
+          </div>
         )}
       </div>
 

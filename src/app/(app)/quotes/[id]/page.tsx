@@ -1,6 +1,6 @@
 import { notFound, redirect } from "next/navigation";
 import Link from "next/link";
-import { Mail, Phone, MapPin, Briefcase } from "lucide-react";
+import { Mail, Phone, MapPin, Briefcase, Printer } from "lucide-react";
 import { getQuoteById } from "@/lib/data/quotes";
 import { requireProfile, isOfficeOrAdmin } from "@/lib/data/auth";
 import { Badge } from "@/components/ui/badge";
@@ -46,6 +46,11 @@ export default async function QuoteDetailPage({
           ) : (
             <QuoteStatusSelect quoteId={quote.id} currentStatus={quote.status} />
           )}
+          <Button asChild size="sm" variant="outline">
+            <Link href={`/quotes/${quote.id}/print`}>
+              <Printer className="h-3.5 w-3.5" /> Print / PDF
+            </Link>
+          </Button>
           {quote.converted_job_id ? (
             <Button asChild size="sm" variant="outline">
               <Link href={`/jobs/${quote.converted_job_id}`}><Briefcase className="h-3.5 w-3.5" /> View job</Link>

@@ -16,3 +16,21 @@ export const staffUpdateSchema = z.object({
 });
 
 export type StaffUpdateInput = z.infer<typeof staffUpdateSchema>;
+
+export const staffCreateSchema = z.object({
+  full_name: z.string().trim().min(1, "Name is required"),
+  email: z.string().trim().toLowerCase().email("Enter a valid email address"),
+  role: z.enum(ROLES),
+  job_title: z.string().optional().or(z.literal("")),
+  phone: z.string().optional().or(z.literal("")),
+  hourly_rate: z
+    .union([z.coerce.number().min(0), z.literal("")])
+    .optional()
+    .transform((v) => (v === "" || v === undefined ? null : v)),
+});
+
+export type StaffCreateInput = z.infer<typeof staffCreateSchema>;
+
+export const staffPasswordResetSchema = z.object({
+  id: z.string().uuid(),
+});

@@ -8,6 +8,8 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { EmptyState } from "@/components/shared/empty-state";
 import { PageHeader } from "@/components/shared/page-header";
+import { SummaryCard } from "@/components/shared/summary-card";
+import { getLatestDailySummary } from "@/lib/data/dashboard";
 
 const STATUS_TONE: Record<string, "default" | "secondary" | "success" | "warning" | "destructive" | "info"> = {
   draft: "secondary", scheduled: "info", in_progress: "warning", on_hold: "destructive",
@@ -21,9 +23,10 @@ function formatTime(iso: string) {
 
 export default async function TodayPage() {
   const profile = await requireProfile();
-  const [appointments, myJobs] = await Promise.all([
+  const [appointments, myJobs, opsSummary] = await Promise.all([
     getMyAppointmentsToday(profile.id),
     listJobs(), // RLS already limits this to jobs the signed-in tradesperson/subcontractor is assigned to
+    getLatestDailySummary("operations"),
   ]);
   const today = new Intl.DateTimeFormat("en-GB", { weekday: "long", day: "numeric", month: "long" }).format(new Date());
 
@@ -144,6 +147,17 @@ export default async function TodayPage() {
           </div>
         )}
       </div>
+
+      {/* The crew get the same job rundown the office sees — it's written from
+          the notes they log, so it's worth them reading it back. */}
+      {opsSummary ? (
+        <SummaryCard
+          title="Today across all jobs"
+          summary={opsSummary}
+          canGenerate={false}
+          emptyDescription=""
+        />
+      ) : null}
 
       <p className="flex items-center justify-center gap-1.5 pt-1 text-center text-xs text-ink-400">
         <Camera className="h-3.5 w-3.5" /> Open a job above to log tasks, notes, photos and documents.

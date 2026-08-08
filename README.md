@@ -28,10 +28,10 @@ alerts, mark-as-read), a working global **search** across jobs/customers/enquiri
 invoices/purchase orders, a **Reports** page (revenue, outstanding/overdue invoices, quote
 conversion rate, job profitability, staff hours), a daily **Vercel Cron** job that flips
 overdue invoices to `overdue` status and notifies the office (see "Overdue invoice cron" below —
-it does not send email, since no email provider is wired up), and an **AI end-of-day summary**:
-a second daily cron job asks Claude to turn the day's real activity (jobs completed, hours
-logged, quotes/invoices sent, payments received, overdue balances) into a short plain-English
-recap, shown as a card on the office/admin dashboard (see "AI end-of-day summary" below).
+it does not send email, since no email provider is wired up), and **AI end-of-day summaries**:
+each weekday evening Claude writes up what happened on every job — from the notes the crew logged
+on site and the hours they booked — so the whole team can see where every job stands, plus a
+separate office-only money digest (see "AI end-of-day summaries" below).
 
 ## 1. Create a Supabase project
 
@@ -54,7 +54,7 @@ supabase link --project-ref <your-project-ref>
 supabase db push
 ```
 
-This runs the five migration files in `supabase/migrations/` in order:
+This runs the six migration files in `supabase/migrations/` in order:
 
 - `0001_init.sql` — every table, enum, index, trigger and Row Level Security policy for the
   whole application (all phases — the schema is built up front so later phases don't need
@@ -67,7 +67,7 @@ This runs the five migration files in `supabase/migrations/` in order:
   cron) can create a notification row for *another* user — the original Phase 1 policy only ever
   let a user manage their own notifications.
 - `0004_daily_summaries.sql` — Adds the `daily_summaries` table the AI end-of-day summary cron
-  writes to, readable by office/admin only (see "AI end-of-day summary" below).
+  writes to.
 - `0005_security_and_integrity.sql` — **required.** Security and data-integrity fixes found in a
   full backend audit. Three of them matter a great deal:
   - `next_document_number()` had no `security definer`, so it ran as the caller. Only admins can
@@ -86,26 +86,61 @@ This runs the five migration files in `supabase/migrations/` in order:
   >100% VAT), makes one quote convertible to exactly one job, and scopes Storage writes to a job
   the uploader can actually see.
 
-If you already ran `0001`–`0004` for an earlier phase, you only need to run `0005` now.
+- `0006_daily_summary_kinds.sql` — **required for the summaries.** Splits `daily_summaries` into
+  two kinds — `operations` (the job rundown, readable by every signed-in staff member) and
+  `financial` (money, office/admin only) — with a kind-aware read policy.
+
+If you already ran `0001`–`0004` for an earlier phase, you only need `0005` and `0006` now.
 
 If you'd rather not install the CLI, paste the contents of the files into the Supabase
 dashboard's **SQL Editor** and run them in order instead.
 
-## 3. Create your staff logins
+## 3. Create your first admin login
 
-Auth users aren't created by SQL — create them from **Authentication → Users → Add user** in the
-Supabase dashboard (or via `supabase.auth.admin.createUser` from a script). A `profiles` row is
-created automatically for each new user (see the `handle_new_user()` trigger), defaulting to the
-`tradesperson` role. To set someone's role/name at creation time, pass user metadata:
+You only ever have to do this once, in the Supabase dashboard — after that, staff are managed
+entirely inside the app (see "Managing staff" below).
+
+Go to **Authentication → Users → Add user**, enter an email and password, and — importantly — set
+this user metadata so the account comes out as an admin rather than the default `tradesperson`:
 
 ```json
-{ "full_name": "Alice Office", "role": "office" }
+{ "full_name": "Colin Smithers", "role": "admin" }
 ```
 
-Valid roles: `admin`, `office`, `tradesperson`, `subcontractor`. You can also update the `role`
-column directly on the `profiles` table afterwards (as an admin, or directly in the SQL editor for
-your very first admin user — there's a chicken-and-egg problem for user #1 since only admins can
-edit other admins' profiles via the app).
+A `profiles` row is created automatically by the `handle_new_user()` trigger. If you forget the
+metadata, fix it once in the SQL editor:
+
+```sql
+update profiles set role = 'admin' where email = 'you@wsmithers.co.uk';
+```
+
+(There's a chicken-and-egg problem for user #1 — only an admin can create admins, so the first one
+has to come from outside the app.)
+
+## Managing staff
+
+Everyone after that first admin is added from **Staff** inside the app — no Supabase dashboard
+required, which matters because that dashboard has no safe "just add a user" permission level to
+hand to an office manager.
+
+Admins can:
+
+- **Add a staff member** — name, email, role, job title, phone and hourly rate. The app creates the
+  login and shows a one-time first password to pass on. There's no email provider wired up, so
+  nothing is emailed: you read the password out or hand it over, and they change it once in.
+- **Reset a password** — issues a new one-time password, shown once, for when someone's locked out.
+- **Edit** roles, rates and details, and **deactivate** anyone who leaves. Since migration 0005,
+  deactivating genuinely revokes access on their next request rather than being cosmetic.
+
+Two guards worth knowing about: you can't demote or deactivate yourself, and you can't remove the
+last active admin — either would lock the company out with no route back in through the app.
+
+Valid roles: `admin` (everything, incl. staff and settings), `office` (everything except staff and
+settings), `tradesperson` and `subcontractor` (their own jobs, timesheets and photos — no financial
+data at all, enforced by RLS rather than just hidden).
+
+This uses `SUPABASE_SERVICE_ROLE_KEY` — the same variable the cron routes need. If it isn't set,
+the Staff screen says so plainly instead of failing silently.
 
 ## 4. Load demo data (optional)
 
@@ -149,131 +184,83 @@ Environment Variables, alongside the two Supabase ones you already set):
   route still works but is unauthenticated — fine for local testing, not recommended in
   production.
 
-## AI end-of-day summary
+## AI end-of-day summaries
 
-`vercel.json` schedules `GET /api/cron/end-of-day-summary` to run at 18:00 UTC on weekdays. Each
-run:
+Two summaries are written each weekday evening (17:00 UTC — 6pm BST / 5pm GMT) by
+`GET /api/cron/end-of-day-summary`, and both appear on the dashboard.
 
-1. Queries Postgres directly for that day's real activity — jobs completed/started, tasks
-   completed, notes/photos added, appointments completed, hours logged (timesheets), quotes sent/
-   accepted, invoices sent, payments received, costs logged, new enquiries, and the current
-   overdue-invoice total.
-2. Sends those exact figures to Claude (via the Anthropic API) with instructions to write a
-   short (3–6 sentence) plain-English recap and to only mention things that actually happened — a
-   metric of zero is left out rather than turned into a sentence, so the summary can't imply
-   activity that didn't occur.
-3. Saves the recap to the `daily_summaries` table (one row per day) and notifies office/admin via
-   the notifications bell.
+**"Today on the jobs"** is the important one, and everyone sees it — office and crew alike. It is
+assembled from what the crew actually recorded during the day: the **notes they wrote on each job**,
+the **hours** from their timesheets, and any **tasks they ticked off**, all grouped by job. Claude
+turns that into a short rundown — a paragraph per job saying what happened, who was on it, and
+anything that's now blocked or waiting — followed by what's booked for tomorrow and a "needs
+chasing" line. The point is that at 6pm everybody can see where every job stands without ringing
+round.
 
-The dashboard shows the most recent saved summary as a card, visible to office/admin only — it's
-never generated live from the browser, and a tradesperson's dashboard never calls the Anthropic
-API or sees this card, matching the same financial-data boundary as Reports.
+It deliberately contains **no money at all**, which is what makes it safe to show the whole team.
+Tradespeople and subcontractors see it on both `/dashboard` and their `/today` screen.
 
-This needs one more environment variable, again in Vercel's Project Settings → Environment
-Variables:
+**"Money today"** is the office-only digest: quotes sent and accepted, invoices sent, payments
+received, costs logged, new enquiries and anything overdue.
 
-- `ANTHROPIC_API_KEY` — a key from [console.anthropic.com](https://console.anthropic.com). Each
-  run is one short API call (roughly a few hundred tokens in, a few hundred out), so cost per day
-  is a fraction of a cent — but you do need a funded Anthropic Console account for this to work in
-  production.
-- `ANTHROPIC_SUMMARY_MODEL` (optional) — overrides the Claude model used (defaults to
-  `claude-sonnet-4-5-20250929`). Only set this if you want a different model.
+Both are built from real rows only. Claude is instructed never to invent activity — if a job has
+hours logged but nobody wrote a note, the summary says exactly that rather than making something
+up. (That case is also flagged as an attention item, since it usually means someone forgot.)
 
-If `ANTHROPIC_API_KEY` isn't set, the route returns an error and simply doesn't save a summary for
-that day — it never fakes one, and the dashboard card shows "No summary yet" until the next
-successful run.
+Office and admin can press **Generate now** on the dashboard card to write both summaries
+immediately rather than waiting for the evening run — handy for checking the setup works, or for
+an up-to-date picture mid-afternoon.
 
-You can trigger a run manually any time (e.g. to test locally) by hitting the route directly:
+### What it needs
 
-```bash
-curl "http://localhost:3000/api/cron/end-of-day-summary"
-```
+- `ANTHROPIC_API_KEY` — from [console.anthropic.com](https://console.anthropic.com), set in Vercel.
+  Each evening is two short API calls, so cost is a fraction of a penny per day, but the account
+  needs billing enabled.
+- `ANTHROPIC_SUMMARY_MODEL` (optional) — defaults to `claude-sonnet-4-5-20250929`.
+- `SUPABASE_SERVICE_ROLE_KEY` and `CRON_SECRET`, as for the overdue-invoice cron.
 
-## Regenerating accurate types
+Without the key nothing is faked: the cards read "No summary yet", and pressing Generate now says
+plainly that the key is missing.
 
-`src/lib/supabase/types.ts` is hand-written to match the SQL migrations exactly. Once your
-Supabase project is live, you can replace it with a generated version (same shape, so no
-application code changes are needed) for guaranteed accuracy:
+### Getting the most out of it
 
-```bash
-npx supabase gen types typescript --project-id <your-project-ref> > src/lib/supabase/types.ts
-```
+The summary is only as good as what goes into it, and the input is the crew's job notes. A note
+like "waiting on the worktop fabricator, 10 working days" is what makes the rundown worth reading;
+no notes means the entry just says hours were logged. Worth telling the crew that the notes tab on
+a job is what feeds the 6pm summary everyone reads.
 
-## Security model
+## Printable documents (quotes, invoices, POs, job sheets)
 
-- **Row Level Security is the real permission boundary**, not just hidden UI. Every table has RLS
-  policies (see `0001_init.sql`) — e.g. a `tradesperson` role can only ever read/update jobs they're
-  assigned to, and financial tables (invoices, payments, job costs, purchase orders) are
-  admin/office-only at the database level, so a UI bug can't leak that data.
-- Auth/session handling uses `@supabase/ssr` with `proxy.ts` (Next.js 16's renamed
-  `middleware.ts`) refreshing the session on every request.
-- All mutations go through Zod-validated Server Actions (see `src/lib/validation/`), never
-  client-side-only validation.
+Four printable documents, each behind a **Print / PDF** button on the relevant detail page.
+Cmd/Ctrl+P → "Save as PDF" produces a clean A4 file you can email, post or hand out.
 
-## Project structure
+| Document | Route | Goes to |
+|---|---|---|
+| Quotation | `/quotes/[id]/print` | the customer |
+| Invoice / Receipt | `/invoices/[id]/print` | the customer |
+| Purchase order | `/purchase-orders/[id]/print` | the supplier |
+| Job sheet | `/jobs/[id]/print` | the crew, on site |
 
-```
-src/
-  app/
-    login/                 Public login page + server action
-    (app)/                 Authenticated route group (sidebar/topbar/mobile nav layout)
-      dashboard/           Office/admin operational dashboard
-      today/                Mobile-first "Today" screen for tradespeople/subcontractors
-      jobs/                 Job list, create (with crew assignment), and a full job workspace
-                            (Overview, Tasks, Notes, Photos, Documents, Timesheets, Costs, Team tabs)
-      settings/             Admin-only company settings
-      customers/            Customer list/search, create, detail (sites + contacts + real jobs list)
-      enquiries/            Enquiry list/status filter, create, detail (status update, convert-to-customer)
-      documents/             Global searchable documents list (every job document you have access to)
-      schedule/              Weekly appointment calendar, create/assign/cancel, overlap prevention
-      timesheets/            Clock in/out, manual entries, office approval queue
-      quotes/                Quote list/create/detail, status updates, accept-quote-to-job flow
-      purchase-orders/       Suppliers + purchase order list/create/detail, status updates
-      invoices/              Invoice list/create/detail, record payments
-      staff/                 Admin-only staff list, role/active edits
-      subcontractors/        Subcontractor records, active toggle, job/appointment assignment
-      reports/               Revenue/outstanding/overdue/job-profitability/staff-hours reporting
-      search/                Global search results across jobs/customers/enquiries/quotes/invoices/POs
-    api/
-      cron/mark-overdue/          Vercel Cron route — see "Overdue invoice cron" above
-      cron/end-of-day-summary/    Vercel Cron route — see "AI end-of-day summary" above
-  components/
-    ui/                    Hand-written shadcn/ui-style primitives (button, card, table, dialog…)
-    shared/                App-wide building blocks (sidebar, topbar w/ notifications, stat card, empty state…)
-  lib/
-    data/                  Server-only data-access layer, one module per domain area (incl.
-                            dashboard.ts's getLatestDailySummary())
-    validation/            Zod schemas
-    supabase/              Browser/server/proxy/admin Supabase clients + hand-written DB types
-supabase/
-  migrations/               Full SQL schema (all phases) + storage/numbering + notifications policy
-                            + daily_summaries table
-  seed/                     Realistic UK demo data
-```
+The **job sheet** is the odd one out: it's for the van, not the customer. It carries the site
+address, access notes, the customer's phone number, the scope, who's on the crew, and the
+outstanding tasks as tick boxes — plus ruled space to write hours and materials by hand, and
+signature lines. It deliberately contains **no money at all**, so a sheet left on site can't leak
+your margins, and tradespeople can open it (everything else here is office/admin only).
 
-## Design system
+The document is rendered from the same data as the app (no PDF library, so what you see on screen
+is exactly what prints) and pulls your letterhead, VAT number, company number, default terms and
+bank details from **company settings** — fill those in at `/settings` before you send the first
+one, or the document will simply omit them.
 
-The interface is built around the company's own identity rather than a generic admin theme. The
-brand terracotta is lifted straight from the logo (`#c63e29`, exposed as the `brand-*` scale in
-`src/app/globals.css`), and the neutral ramp is a warm stone (`ink-*`) rather than the cool
-blue-grey most component libraries ship with, so the two sit together instead of fighting.
+Behaviour worth knowing:
 
-Type is Outfit for display (page titles, figures, the small letter-spaced uppercase "eyebrow"
-labels that echo the `EST. 1955` lockup) over Inter for everything else. Both are self-hosted via
-`@fontsource-variable/*` npm packages rather than `next/font/google`, so there's no build-time
-fetch to Google and no third-party request at runtime.
-
-The logo assets live in `public/`: `logo.png` is the full lockup used on the login screen, and
-`mark.png` is the monogram alone, used in the sidebar, the mobile header and as the favicon.
-
-Shared building blocks worth knowing about:
-
-- `components/shared/page-header.tsx` — the standard masthead (eyebrow / title / description /
-  actions slot) used across pages.
-- `components/shared/stat-card.tsx` — KPI tile with tonal variants (`default`, `brand`, `warning`,
-  `danger`) and tabular figures.
-- `components/shared/logo.tsx` — `LogoMark` and `LogoLockup`.
-- The `.eyebrow`, `.page-title` and `.tnum` utility classes in `globals.css`.
+- A paid invoice prints as a **Receipt** rather than an Invoice, and lists the payments received.
+- A part-paid invoice shows "Paid to date" and "Amount due", not just the total.
+- Draft quotes and invoices print with a visible note reminding you they're still drafts; that
+  note is the only thing on the page that isn't customer-facing, and it disappears once you mark
+  the document as sent.
+- Print styles hide the sidebar, topbar and buttons, repeat the table header across pages, and
+  avoid splitting a line item across a page break.
 
 ## A note on the shadcn/ui components
 

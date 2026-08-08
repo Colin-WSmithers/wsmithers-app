@@ -6,7 +6,7 @@
     },
     {
       "path": "/api/cron/end-of-day-summary",
-      "schedule": "0 18 * * 1-5"
+      "schedule": "0 17 * * 1-5"
     }
   ]
 }

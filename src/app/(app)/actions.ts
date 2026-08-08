@@ -3,7 +3,7 @@
 import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
-import { requireProfile } from "@/lib/data/auth";
+import { requireProfile, isOfficeOrAdmin } from "@/lib/data/auth";
 
 export async function signOutAction() {
   const supabase = await createClient();
@@ -31,4 +31,27 @@ export async function markAllNotificationsReadAction(): Promise<void> {
     .eq("profile_id", profile.id)
     .eq("is_read", false);
   revalidatePath("/", "layout");
+}
+
+/**
+ * Generate today's summaries on demand, rather than waiting for the evening
+ * cron. Office/admin only — it costs an API call and rewrites the day's rows
+ * for everyone. The heavy lifting (and the service-role client) stays in
+ * lib/data/daily-summary, which is server-only.
+ */
+export async function generateSummariesNowAction(): Promise<{ error?: string; ok?: boolean }> {
+  const profile = await requireProfile();
+  if (!isOfficeOrAdmin(profile.role)) {
+    return { error: "You do not have permission to do that." };
+  }
+
+  const { generateDailySummaries } = await import("@/lib/data/daily-summary");
+  const results = await generateDailySummaries();
+
+  const firstError = results.find((r) => r.error)?.error;
+  if (firstError) return { error: firstError };
+
+  revalidatePath("/dashboard");
+  revalidatePath("/today");
+  return { ok: true };
 }
