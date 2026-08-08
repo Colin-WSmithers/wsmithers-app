@@ -36,8 +36,8 @@ export default async function EnquiriesPage({
     <div className="flex flex-col gap-4">
       <div className="flex flex-col justify-between gap-3 sm:flex-row sm:items-center">
         <div>
-          <h1 className="text-lg font-semibold text-slate-900">Enquiries</h1>
-          <p className="text-sm text-slate-500">New leads, waiting to become quotes and jobs.</p>
+          <h1 className="page-title text-[1.375rem] leading-tight">Enquiries</h1>
+          <p className="text-sm text-ink-500">New leads, waiting to become quotes and jobs.</p>
         </div>
         <Button asChild size="sm">
           <Link href="/enquiries/new">
@@ -70,7 +70,7 @@ export default async function EnquiriesPage({
           actionHref="/enquiries/new"
         />
       ) : (
-        <div className="overflow-hidden rounded-lg border border-slate-200 bg-white">
+        <div className="overflow-hidden rounded-lg border border-ink-200 bg-white">
           <Table>
             <TableHeader>
               <TableRow>
@@ -85,10 +85,10 @@ export default async function EnquiriesPage({
               {enquiries.map((enquiry) => (
                 <TableRow key={enquiry.id}>
                   <TableCell>
-                    <Link href={`/enquiries/${enquiry.id}`} className="font-medium text-slate-900 hover:underline">
+                    <Link href={`/enquiries/${enquiry.id}`} className="font-medium text-ink-900 hover:underline">
                       {enquiry.company_name || [enquiry.first_name, enquiry.last_name].filter(Boolean).join(" ") || "Unnamed"}
                     </Link>
-                    <p className="text-xs text-slate-500">{enquiry.email ?? enquiry.phone ?? ""}</p>
+                    <p className="text-xs text-ink-500">{enquiry.email ?? enquiry.phone ?? ""}</p>
                   </TableCell>
                   <TableCell>{formatDateUK(enquiry.date_received)}</TableCell>
                   <TableCell>{enquiry.estimated_value ? formatCurrencyGBP(enquiry.estimated_value) : "—"}</TableCell>

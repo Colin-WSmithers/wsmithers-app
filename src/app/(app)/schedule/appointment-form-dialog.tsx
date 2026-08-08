@@ -98,12 +98,12 @@ export function AppointmentFormDialog({
           <div className="flex flex-col gap-2">
             <Label>Assign staff</Label>
             {staff.length === 0 ? (
-              <p className="text-sm text-slate-500">No active staff to assign.</p>
+              <p className="text-sm text-ink-500">No active staff to assign.</p>
             ) : (
               <div className="grid grid-cols-2 gap-2">
                 {staff.map((s) => (
-                  <label key={s.id} className="flex items-center gap-2 rounded-md border border-slate-200 px-3 py-2 text-sm text-slate-700">
-                    <input type="checkbox" name="assigned_staff" value={s.id} className="h-4 w-4 rounded border-slate-300" />
+                  <label key={s.id} className="flex items-center gap-2 rounded-md border border-ink-200 px-3 py-2 text-sm text-ink-700">
+                    <input type="checkbox" name="assigned_staff" value={s.id} className="h-4 w-4 rounded border-ink-300" />
                     {s.full_name}
                   </label>
                 ))}
@@ -115,8 +115,8 @@ export function AppointmentFormDialog({
               <Label>Assign subcontractors</Label>
               <div className="grid grid-cols-2 gap-2">
                 {subcontractors.map((s) => (
-                  <label key={s.id} className="flex items-center gap-2 rounded-md border border-slate-200 px-3 py-2 text-sm text-slate-700">
-                    <input type="checkbox" name="assigned_subcontractors" value={s.id} className="h-4 w-4 rounded border-slate-300" />
+                  <label key={s.id} className="flex items-center gap-2 rounded-md border border-ink-200 px-3 py-2 text-sm text-ink-700">
+                    <input type="checkbox" name="assigned_subcontractors" value={s.id} className="h-4 w-4 rounded border-ink-300" />
                     {s.name}{s.trade ? ` — ${s.trade}` : ""}
                   </label>
                 ))}

@@ -23,8 +23,8 @@ export default async function QuotesPage() {
     <div className="flex flex-col gap-4">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-lg font-semibold text-slate-900">Quotes</h1>
-          <p className="text-sm text-slate-500">Build, send and track quotes — accept one to create a job automatically.</p>
+          <h1 className="page-title text-[1.375rem] leading-tight">Quotes</h1>
+          <p className="text-sm text-ink-500">Build, send and track quotes — accept one to create a job automatically.</p>
         </div>
         <Button asChild size="sm">
           <Link href="/quotes/new"><Plus className="h-4 w-4" /> New Quote</Link>
@@ -40,7 +40,7 @@ export default async function QuotesPage() {
           actionHref="/quotes/new"
         />
       ) : (
-        <div className="overflow-hidden rounded-lg border border-slate-200 bg-white">
+        <div className="overflow-hidden rounded-lg border border-ink-200 bg-white">
           <Table>
             <TableHeader>
               <TableRow>
@@ -56,7 +56,7 @@ export default async function QuotesPage() {
               {quotes.map((q) => (
                 <TableRow key={q.id}>
                   <TableCell>
-                    <Link href={`/quotes/${q.id}`} className="font-medium text-slate-900 hover:underline">
+                    <Link href={`/quotes/${q.id}`} className="font-medium text-ink-900 hover:underline">
                       {q.quote_number}
                     </Link>
                   </TableCell>

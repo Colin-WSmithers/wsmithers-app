@@ -23,8 +23,8 @@ export default async function NewQuotePage({
   return (
     <div className="mx-auto flex max-w-3xl flex-col gap-6">
       <div>
-        <h1 className="text-lg font-semibold text-slate-900">New quote</h1>
-        <p className="text-sm text-slate-500">Add line items — VAT and totals are calculated automatically.</p>
+        <h1 className="page-title text-[1.375rem] leading-tight">New quote</h1>
+        <p className="text-sm text-ink-500">Add line items — VAT and totals are calculated automatically.</p>
       </div>
       <QuoteForm
         customers={customers}

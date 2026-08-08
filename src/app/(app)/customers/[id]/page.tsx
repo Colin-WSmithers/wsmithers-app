@@ -49,23 +49,23 @@ export default async function CustomerDetailPage({ params }: { params: Promise<{
 
   return (
     <div className="flex flex-col gap-6">
-      <div className="rounded-lg border border-slate-200 bg-white p-4">
-        <h1 className="text-lg font-semibold text-slate-900">{customer.display_name}</h1>
-        {customer.company_name && <p className="text-sm text-slate-500">{customer.company_name}</p>}
-        <div className="mt-2 flex flex-wrap gap-x-4 gap-y-1 text-sm text-slate-600">
+      <div className="rounded-lg border border-ink-200 bg-white p-4">
+        <h1 className="page-title text-[1.375rem] leading-tight">{customer.display_name}</h1>
+        {customer.company_name && <p className="text-sm text-ink-500">{customer.company_name}</p>}
+        <div className="mt-2 flex flex-wrap gap-x-4 gap-y-1 text-sm text-ink-600">
           {customer.email && (
             <span className="inline-flex items-center gap-1.5">
-              <Mail className="h-3.5 w-3.5 text-slate-400" /> {customer.email}
+              <Mail className="h-3.5 w-3.5 text-ink-400" /> {customer.email}
             </span>
           )}
           {customer.phone && (
             <span className="inline-flex items-center gap-1.5">
-              <Phone className="h-3.5 w-3.5 text-slate-400" /> {customer.phone}
+              <Phone className="h-3.5 w-3.5 text-ink-400" /> {customer.phone}
             </span>
           )}
           {(customer.billing_city || customer.billing_postcode) && (
             <span className="inline-flex items-center gap-1.5">
-              <MapPin className="h-3.5 w-3.5 text-slate-400" />
+              <MapPin className="h-3.5 w-3.5 text-ink-400" />
               {[customer.billing_address_line1, customer.billing_city, customer.billing_postcode]
                 .filter(Boolean)
                 .join(", ")}
@@ -84,11 +84,11 @@ export default async function CustomerDetailPage({ params }: { params: Promise<{
             {customer.sites.length === 0 ? (
               <EmptyState icon={MapPin} title="No sites yet" description="Add the properties or addresses work happens at for this customer." />
             ) : (
-              <ul className="divide-y divide-slate-100">
+              <ul className="divide-y divide-ink-100">
                 {customer.sites.map((site) => (
                   <li key={site.id} className="py-2.5">
-                    <p className="text-sm font-medium text-slate-900">{site.label}</p>
-                    <p className="text-xs text-slate-500">
+                    <p className="text-sm font-medium text-ink-900">{site.label}</p>
+                    <p className="text-xs text-ink-500">
                       {[site.address_line1, site.city, site.postcode].filter(Boolean).join(", ")}
                     </p>
                   </li>
@@ -107,15 +107,15 @@ export default async function CustomerDetailPage({ params }: { params: Promise<{
             {customer.contacts.length === 0 ? (
               <EmptyState icon={Mail} title="No contacts yet" description="Add extra people connected to this customer, like a site manager or tenant." />
             ) : (
-              <ul className="divide-y divide-slate-100">
+              <ul className="divide-y divide-ink-100">
                 {customer.contacts.map((contact) => (
                   <li key={contact.id} className="flex items-center justify-between py-2.5">
                     <div>
-                      <p className="flex items-center gap-1.5 text-sm font-medium text-slate-900">
+                      <p className="flex items-center gap-1.5 text-sm font-medium text-ink-900">
                         {contact.full_name}
                         {contact.is_primary && <Star className="h-3.5 w-3.5 fill-amber-400 text-amber-400" />}
                       </p>
-                      <p className="text-xs text-slate-500">
+                      <p className="text-xs text-ink-500">
                         {[contact.role, contact.email, contact.phone].filter(Boolean).join(" · ")}
                       </p>
                     </div>
@@ -133,7 +133,7 @@ export default async function CustomerDetailPage({ params }: { params: Promise<{
             <CardTitle>Notes</CardTitle>
           </CardHeader>
           <CardContent>
-            <p className="whitespace-pre-wrap text-sm text-slate-700">{customer.notes}</p>
+            <p className="whitespace-pre-wrap text-sm text-ink-700">{customer.notes}</p>
           </CardContent>
         </Card>
       )}
@@ -157,14 +157,14 @@ export default async function CustomerDetailPage({ params }: { params: Promise<{
               description="Jobs for this customer will show up here once created."
             />
           ) : (
-            <ul className="divide-y divide-slate-100">
+            <ul className="divide-y divide-ink-100">
               {jobs.map((job) => (
                 <li key={job.id} className="flex items-center justify-between py-2.5">
                   <div>
-                    <Link href={`/jobs/${job.id}`} className="text-sm font-medium text-slate-900 hover:underline">
+                    <Link href={`/jobs/${job.id}`} className="text-sm font-medium text-ink-900 hover:underline">
                       {job.job_number} — {job.job_name}
                     </Link>
-                    <p className="text-xs text-slate-500">
+                    <p className="text-xs text-ink-500">
                       {job.site ? `${job.site.label} · ` : ""}
                       {formatDateUK(job.start_date)}
                     </p>
@@ -192,12 +192,12 @@ export default async function CustomerDetailPage({ params }: { params: Promise<{
               {quotes.length === 0 ? (
                 <EmptyState icon={FileText} title="No quotes yet" description="Build a quote for this customer." />
               ) : (
-                <ul className="divide-y divide-slate-100">
+                <ul className="divide-y divide-ink-100">
                   {quotes.map((q) => (
                     <li key={q.id} className="flex items-center justify-between py-2.5">
                       <div>
-                        <Link href={`/quotes/${q.id}`} className="text-sm font-medium text-slate-900 hover:underline">{q.quote_number}</Link>
-                        <p className="text-xs text-slate-500">{formatCurrencyGBP(q.grand_total)} · {formatDateUK(q.issue_date)}</p>
+                        <Link href={`/quotes/${q.id}`} className="text-sm font-medium text-ink-900 hover:underline">{q.quote_number}</Link>
+                        <p className="text-xs text-ink-500">{formatCurrencyGBP(q.grand_total)} · {formatDateUK(q.issue_date)}</p>
                       </div>
                       <Badge variant={QUOTE_STATUS_TONE[q.status] ?? "secondary"} className="capitalize">{q.status}</Badge>
                     </li>
@@ -218,12 +218,12 @@ export default async function CustomerDetailPage({ params }: { params: Promise<{
               {invoices.length === 0 ? (
                 <EmptyState icon={Receipt} title="No invoices yet" description="Invoices raised against this customer will show up here." />
               ) : (
-                <ul className="divide-y divide-slate-100">
+                <ul className="divide-y divide-ink-100">
                   {invoices.map((inv) => (
                     <li key={inv.id} className="flex items-center justify-between py-2.5">
                       <div>
-                        <Link href={`/invoices/${inv.id}`} className="text-sm font-medium text-slate-900 hover:underline">{inv.invoice_number}</Link>
-                        <p className="text-xs text-slate-500">{formatCurrencyGBP(inv.total)} · Due {formatDateUK(inv.due_date)}</p>
+                        <Link href={`/invoices/${inv.id}`} className="text-sm font-medium text-ink-900 hover:underline">{inv.invoice_number}</Link>
+                        <p className="text-xs text-ink-500">{formatCurrencyGBP(inv.total)} · Due {formatDateUK(inv.due_date)}</p>
                       </div>
                       <Badge variant={INVOICE_STATUS_TONE[inv.status] ?? "secondary"} className="capitalize">{inv.status.replace(/_/g, " ")}</Badge>
                     </li>

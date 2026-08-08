@@ -18,8 +18,8 @@ export default async function CustomersPage({
     <div className="flex flex-col gap-4">
       <div className="flex flex-col justify-between gap-3 sm:flex-row sm:items-center">
         <div>
-          <h1 className="text-lg font-semibold text-slate-900">Customers</h1>
-          <p className="text-sm text-slate-500">Every customer, their sites and contact details in one place.</p>
+          <h1 className="page-title text-[1.375rem] leading-tight">Customers</h1>
+          <p className="text-sm text-ink-500">Every customer, their sites and contact details in one place.</p>
         </div>
         <Button asChild size="sm">
           <Link href="/customers/new">
@@ -29,7 +29,7 @@ export default async function CustomersPage({
       </div>
 
       <form className="relative max-w-sm">
-        <Search className="pointer-events-none absolute left-2.5 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
+        <Search className="pointer-events-none absolute left-2.5 top-1/2 h-4 w-4 -translate-y-1/2 text-ink-400" />
         <Input name="q" defaultValue={q} placeholder="Search name, company, email, phone…" className="pl-8" />
       </form>
 
@@ -46,7 +46,7 @@ export default async function CustomersPage({
           actionHref={q ? undefined : "/customers/new"}
         />
       ) : (
-        <div className="overflow-hidden rounded-lg border border-slate-200 bg-white">
+        <div className="overflow-hidden rounded-lg border border-ink-200 bg-white">
           <Table>
             <TableHeader>
               <TableRow>
@@ -60,19 +60,19 @@ export default async function CustomersPage({
               {customers.map((customer) => (
                 <TableRow key={customer.id}>
                   <TableCell>
-                    <Link href={`/customers/${customer.id}`} className="font-medium text-slate-900 hover:underline">
+                    <Link href={`/customers/${customer.id}`} className="font-medium text-ink-900 hover:underline">
                       {customer.display_name}
                     </Link>
-                    {customer.company_name && <p className="text-xs text-slate-500">{customer.company_name}</p>}
+                    {customer.company_name && <p className="text-xs text-ink-500">{customer.company_name}</p>}
                   </TableCell>
                   <TableCell>
-                    <p className="text-slate-700">{customer.email ?? "—"}</p>
-                    <p className="text-xs text-slate-500">{customer.phone ?? ""}</p>
+                    <p className="text-ink-700">{customer.email ?? "—"}</p>
+                    <p className="text-xs text-ink-500">{customer.phone ?? ""}</p>
                   </TableCell>
                   <TableCell>
                     {customer.billing_city || customer.billing_postcode ? (
-                      <span className="inline-flex items-center gap-1 text-slate-600">
-                        <MapPin className="h-3.5 w-3.5 text-slate-400" />
+                      <span className="inline-flex items-center gap-1 text-ink-600">
+                        <MapPin className="h-3.5 w-3.5 text-ink-400" />
                         {[customer.billing_city, customer.billing_postcode].filter(Boolean).join(", ")}
                       </span>
                     ) : (

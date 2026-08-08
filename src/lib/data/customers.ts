@@ -1,5 +1,6 @@
 import "server-only";
 import { createClient } from "@/lib/supabase/server";
+import { ilikeAnyFilter } from "@/lib/utils";
 import type { Customer, CustomerContact, Site } from "@/lib/supabase/types";
 
 export interface CustomerListRow {
@@ -28,8 +29,10 @@ export async function listCustomers(search?: string): Promise<CustomerListRow[]>
     .order("display_name", { ascending: true });
 
   if (search && search.trim()) {
+    // Escaped/quoted — a customer name containing a comma would otherwise
+    // break the PostgREST or() expression. See ilikeAnyFilter in lib/utils.
     query = query.or(
-      `display_name.ilike.%${search}%,company_name.ilike.%${search}%,email.ilike.%${search}%,phone.ilike.%${search}%`
+      ilikeAnyFilter(["display_name", "company_name", "email", "phone"], search.trim())
     );
   }
 

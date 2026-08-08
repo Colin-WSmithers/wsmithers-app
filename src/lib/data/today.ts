@@ -1,5 +1,6 @@
 import "server-only";
 import { createClient } from "@/lib/supabase/server";
+import { londonDayRange } from "@/lib/utils";
 
 export interface TodayAppointment {
   id: string;
@@ -11,6 +12,7 @@ export interface TodayAppointment {
     id: string;
     job_number: string;
     job_name: string;
+    customer: { display_name: string; phone: string | null } | null;
   } | null;
   site: {
     label: string;
@@ -27,17 +29,15 @@ export interface TodayAppointment {
  */
 export async function getMyAppointmentsToday(profileId: string): Promise<TodayAppointment[]> {
   const supabase = await createClient();
-  const start = new Date();
-  start.setHours(0, 0, 0, 0);
-  const end = new Date(start);
-  end.setDate(end.getDate() + 1);
+  // London-local day, not UTC — see londonDayRange() in lib/utils.
+  const { start, end } = londonDayRange();
 
   const { data } = await supabase
     .from("appointment_assignments")
     .select(
       `appointment:appointments!inner(
         id, title, starts_at, ends_at, status,
-        job:jobs(id, job_number, job_name),
+        job:jobs(id, job_number, job_name, customer:customers(display_name, phone)),
         site:sites(label, address_line1, city, postcode)
       )`
     )

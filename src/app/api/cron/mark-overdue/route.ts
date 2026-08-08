@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createAdminClient } from "@/lib/supabase/admin";
+import { londonDateKey } from "@/lib/utils";
 
 /**
  * Vercel Cron route — flips any sent/viewed/part_paid invoice past its due
@@ -27,7 +28,8 @@ export async function GET(request: NextRequest) {
   }
 
   const supabase = createAdminClient();
-  const today = new Date().toISOString().slice(0, 10);
+  // London date, so an invoice never reads as overdue an hour early under BST.
+  const today = londonDateKey();
 
   const { data: overdue, error } = await supabase
     .from("invoices")

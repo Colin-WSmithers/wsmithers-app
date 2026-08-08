@@ -23,8 +23,8 @@ export default async function InvoicesPage() {
     <div className="flex flex-col gap-4">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-lg font-semibold text-slate-900">Invoices</h1>
-          <p className="text-sm text-slate-500">Track what&apos;s owed and record payments as they land.</p>
+          <h1 className="page-title text-[1.375rem] leading-tight">Invoices</h1>
+          <p className="text-sm text-ink-500">Track what&apos;s owed and record payments as they land.</p>
         </div>
         <Button asChild size="sm">
           <Link href="/invoices/new"><Plus className="h-4 w-4" /> New Invoice</Link>
@@ -40,7 +40,7 @@ export default async function InvoicesPage() {
           actionHref="/invoices/new"
         />
       ) : (
-        <div className="overflow-hidden rounded-lg border border-slate-200 bg-white">
+        <div className="overflow-hidden rounded-lg border border-ink-200 bg-white">
           <Table>
             <TableHeader>
               <TableRow>
@@ -57,14 +57,14 @@ export default async function InvoicesPage() {
               {invoices.map((inv) => (
                 <TableRow key={inv.id}>
                   <TableCell>
-                    <Link href={`/invoices/${inv.id}`} className="font-medium text-slate-900 hover:underline">
+                    <Link href={`/invoices/${inv.id}`} className="font-medium text-ink-900 hover:underline">
                       {inv.invoice_number}
                     </Link>
                   </TableCell>
                   <TableCell>{inv.customer?.display_name ?? "—"}</TableCell>
                   <TableCell>
                     {inv.job ? (
-                      <Link href={`/jobs/${inv.job.id}`} className="text-slate-600 hover:underline">{inv.job.job_number}</Link>
+                      <Link href={`/jobs/${inv.job.id}`} className="text-ink-600 hover:underline">{inv.job.job_number}</Link>
                     ) : "—"}
                   </TableCell>
                   <TableCell>{formatCurrencyGBP(inv.total)}</TableCell>

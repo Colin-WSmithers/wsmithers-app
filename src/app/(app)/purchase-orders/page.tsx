@@ -24,8 +24,8 @@ export default async function PurchaseOrdersPage() {
     <div className="flex flex-col gap-4">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-lg font-semibold text-slate-900">Purchase Orders</h1>
-          <p className="text-sm text-slate-500">Orders raised with suppliers, with costs flowing into job costing.</p>
+          <h1 className="page-title text-[1.375rem] leading-tight">Purchase Orders</h1>
+          <p className="text-sm text-ink-500">Orders raised with suppliers, with costs flowing into job costing.</p>
         </div>
         <div className="flex items-center gap-2">
           <Button asChild size="sm">
@@ -43,7 +43,7 @@ export default async function PurchaseOrdersPage() {
           actionHref="/purchase-orders/new"
         />
       ) : (
-        <div className="overflow-hidden rounded-lg border border-slate-200 bg-white">
+        <div className="overflow-hidden rounded-lg border border-ink-200 bg-white">
           <Table>
             <TableHeader>
               <TableRow>
@@ -59,14 +59,14 @@ export default async function PurchaseOrdersPage() {
               {pos.map((po) => (
                 <TableRow key={po.id}>
                   <TableCell>
-                    <Link href={`/purchase-orders/${po.id}`} className="font-medium text-slate-900 hover:underline">
+                    <Link href={`/purchase-orders/${po.id}`} className="font-medium text-ink-900 hover:underline">
                       {po.po_number}
                     </Link>
                   </TableCell>
                   <TableCell>{po.supplier?.name ?? "—"}</TableCell>
                   <TableCell>
                     {po.job ? (
-                      <Link href={`/jobs/${po.job.id}`} className="text-slate-600 hover:underline">{po.job.job_number}</Link>
+                      <Link href={`/jobs/${po.job.id}`} className="text-ink-600 hover:underline">{po.job.job_number}</Link>
                     ) : "—"}
                   </TableCell>
                   <TableCell>{formatCurrencyGBP(po.grand_total)}</TableCell>

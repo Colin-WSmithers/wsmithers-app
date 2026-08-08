@@ -18,8 +18,8 @@ export default async function NewInvoicePage({
   return (
     <div className="mx-auto flex max-w-3xl flex-col gap-6">
       <div>
-        <h1 className="text-lg font-semibold text-slate-900">New invoice</h1>
-        <p className="text-sm text-slate-500">Raise a deposit, progress, final or standalone invoice.</p>
+        <h1 className="page-title text-[1.375rem] leading-tight">New invoice</h1>
+        <p className="text-sm text-ink-500">Raise a deposit, progress, final or standalone invoice.</p>
       </div>
       <InvoiceForm customers={customers} jobs={jobs} defaultJobId={job_id} />
     </div>

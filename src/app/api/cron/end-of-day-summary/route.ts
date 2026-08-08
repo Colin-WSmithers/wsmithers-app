@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import Anthropic from "@anthropic-ai/sdk";
 import { createAdminClient } from "@/lib/supabase/admin";
+import { londonDateKey, londonDayRange } from "@/lib/utils";
 
 /**
  * Vercel Cron route — builds a one-day activity snapshot from the database,
@@ -19,9 +20,13 @@ import { createAdminClient } from "@/lib/supabase/admin";
  * invent activity that didn't happen.
  */
 
+/**
+ * The working day is a London day, not a UTC one. During BST these differ by
+ * an hour, which would otherwise push early-morning timesheets and late
+ * appointments into the wrong day's summary.
+ */
 function dayRange(dateStr: string): { start: string; end: string } {
-  const start = new Date(`${dateStr}T00:00:00.000Z`);
-  const end = new Date(`${dateStr}T23:59:59.999Z`);
+  const { start, end } = londonDayRange(dateStr);
   return { start: start.toISOString(), end: end.toISOString() };
 }
 
@@ -135,7 +140,7 @@ export async function GET(request: NextRequest) {
     }
   }
 
-  const dateStr = new Date().toISOString().slice(0, 10);
+  const dateStr = londonDateKey();
   const supabase = createAdminClient();
 
   let stats;

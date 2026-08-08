@@ -71,12 +71,12 @@ export function LineItemsEditor({
     <div className="flex flex-col gap-3">
       <div className="flex flex-col gap-2">
         {rows.map((row) => (
-          <div key={row.id} className="flex flex-col gap-2 rounded-md border border-slate-200 p-3 sm:flex-row sm:items-end sm:gap-2 sm:rounded-none sm:border-0 sm:border-b sm:p-0 sm:pb-2">
+          <div key={row.id} className="flex flex-col gap-2 rounded-md border border-ink-200 p-3 sm:flex-row sm:items-end sm:gap-2 sm:rounded-none sm:border-0 sm:border-b sm:p-0 sm:pb-2">
             {templates.length > 0 && (
               <div className="sm:w-40">
-                <label className="text-xs text-slate-500">Template</label>
+                <label className="text-xs text-ink-500">Template</label>
                 <select
-                  className="mt-1 flex h-9 w-full rounded-md border border-slate-200 bg-white px-2 text-sm"
+                  className="mt-1 flex h-9 w-full rounded-md border border-ink-200 bg-white px-2 text-sm"
                   defaultValue=""
                   onChange={(e) => applyTemplate(row.id, e.target.value)}
                 >
@@ -88,7 +88,7 @@ export function LineItemsEditor({
               </div>
             )}
             <div className="flex-1">
-              <label className="text-xs text-slate-500">Description</label>
+              <label className="text-xs text-ink-500">Description</label>
               <Input
                 name={fieldNames.description}
                 value={row.description}
@@ -99,7 +99,7 @@ export function LineItemsEditor({
             </div>
             {showCategory && (
               <div className="sm:w-28">
-                <label className="text-xs text-slate-500">Category</label>
+                <label className="text-xs text-ink-500">Category</label>
                 <Input
                   name={fieldNames.category}
                   value={row.category}
@@ -110,7 +110,7 @@ export function LineItemsEditor({
               </div>
             )}
             <div className="sm:w-20">
-              <label className="text-xs text-slate-500">Qty</label>
+              <label className="text-xs text-ink-500">Qty</label>
               <Input
                 name={fieldNames.quantity}
                 type="number"
@@ -122,7 +122,7 @@ export function LineItemsEditor({
             </div>
             {showUnit && (
               <div className="sm:w-20">
-                <label className="text-xs text-slate-500">Unit</label>
+                <label className="text-xs text-ink-500">Unit</label>
                 <Input
                   name={fieldNames.unit}
                   value={row.unit}
@@ -132,7 +132,7 @@ export function LineItemsEditor({
               </div>
             )}
             <div className="sm:w-24">
-              <label className="text-xs text-slate-500">Unit price (£)</label>
+              <label className="text-xs text-ink-500">Unit price (£)</label>
               <Input
                 name={fieldNames.unitPrice}
                 type="number"
@@ -144,7 +144,7 @@ export function LineItemsEditor({
               />
             </div>
             <div className="sm:w-20">
-              <label className="text-xs text-slate-500">VAT %</label>
+              <label className="text-xs text-ink-500">VAT %</label>
               <Input
                 name={fieldNames.vatRate}
                 type="number"
@@ -157,7 +157,7 @@ export function LineItemsEditor({
               />
             </div>
             <Button type="button" variant="ghost" size="icon" onClick={() => removeRow(row.id)} aria-label="Remove line">
-              <Trash2 className="h-4 w-4 text-slate-400" />
+              <Trash2 className="h-4 w-4 text-ink-400" />
             </Button>
           </div>
         ))}
@@ -167,10 +167,10 @@ export function LineItemsEditor({
         <Plus className="h-3.5 w-3.5" /> Add line
       </Button>
 
-      <div className="flex justify-end gap-6 border-t border-slate-100 pt-3 text-sm">
-        <span className="text-slate-500">Subtotal: {formatCurrencyGBP(subtotal)}</span>
-        <span className="text-slate-500">VAT: {formatCurrencyGBP(vatTotal)}</span>
-        <span className="font-semibold text-slate-900">Total: {formatCurrencyGBP(subtotal + vatTotal)}</span>
+      <div className="flex justify-end gap-6 border-t border-ink-100 pt-3 text-sm">
+        <span className="text-ink-500">Subtotal: {formatCurrencyGBP(subtotal)}</span>
+        <span className="text-ink-500">VAT: {formatCurrencyGBP(vatTotal)}</span>
+        <span className="font-semibold text-ink-900">Total: {formatCurrencyGBP(subtotal + vatTotal)}</span>
       </div>
     </div>
   );

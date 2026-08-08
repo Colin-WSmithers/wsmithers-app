@@ -29,8 +29,8 @@ export default async function JobsPage() {
     <div className="flex flex-col gap-4">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-lg font-semibold text-slate-900">Jobs</h1>
-          <p className="text-sm text-slate-500">
+          <h1 className="page-title text-[1.375rem] leading-tight">Jobs</h1>
+          <p className="text-sm text-ink-500">
             {office ? "Every job currently in the system." : "Jobs you're assigned to."}
           </p>
         </div>
@@ -56,7 +56,7 @@ export default async function JobsPage() {
           actionHref={office ? "/jobs/new" : undefined}
         />
       ) : (
-        <div className="overflow-hidden rounded-lg border border-slate-200 bg-white">
+        <div className="overflow-hidden rounded-lg border border-ink-200 bg-white">
           <Table>
             <TableHeader>
               <TableRow>
@@ -72,16 +72,16 @@ export default async function JobsPage() {
               {jobs.map((job) => (
                 <TableRow key={job.id}>
                   <TableCell>
-                    <Link href={`/jobs/${job.id}`} className="font-medium text-slate-900 hover:underline">
+                    <Link href={`/jobs/${job.id}`} className="font-medium text-ink-900 hover:underline">
                       {job.job_number}
                     </Link>
-                    <p className="text-xs text-slate-500">{job.job_name}</p>
+                    <p className="text-xs text-ink-500">{job.job_name}</p>
                   </TableCell>
                   <TableCell>{job.customer?.display_name ?? "—"}</TableCell>
                   <TableCell>
                     {job.site ? (
-                      <span className="inline-flex items-center gap-1 text-slate-600">
-                        <MapPin className="h-3.5 w-3.5 text-slate-400" /> {job.site.label} · {job.site.postcode}
+                      <span className="inline-flex items-center gap-1 text-ink-600">
+                        <MapPin className="h-3.5 w-3.5 text-ink-400" /> {job.site.label} · {job.site.postcode}
                       </span>
                     ) : (
                       "—"

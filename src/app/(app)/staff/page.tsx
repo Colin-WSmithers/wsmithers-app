@@ -25,18 +25,18 @@ export default async function StaffPage() {
   return (
     <div className="flex flex-col gap-4">
       <div>
-        <h1 className="text-lg font-semibold text-slate-900">Staff</h1>
-        <p className="text-sm text-slate-500">
+        <h1 className="page-title text-[1.375rem] leading-tight">Staff</h1>
+        <p className="text-sm text-ink-500">
           Manage employee roles, rates and active status. New logins are created in Supabase (Authentication → Users) —
           they appear here automatically once signed up.
         </p>
       </div>
 
-      <div className="flex items-center gap-2 text-xs text-slate-400">
+      <div className="flex items-center gap-2 text-xs text-ink-400">
         <UserCog className="h-3.5 w-3.5" /> {staff.length} {staff.length === 1 ? "person" : "people"}
       </div>
 
-      <div className="overflow-hidden rounded-lg border border-slate-200 bg-white">
+      <div className="overflow-hidden rounded-lg border border-ink-200 bg-white">
         <Table>
           <TableHeader>
             <TableRow>
@@ -55,8 +55,8 @@ export default async function StaffPage() {
                   <div className="flex items-center gap-2.5">
                     <Avatar className="h-8 w-8"><AvatarFallback>{initials(s.full_name)}</AvatarFallback></Avatar>
                     <div>
-                      <p className="font-medium text-slate-900">{s.full_name}</p>
-                      <p className="text-xs text-slate-500">{s.email}</p>
+                      <p className="font-medium text-ink-900">{s.full_name}</p>
+                      <p className="text-xs text-ink-500">{s.email}</p>
                     </div>
                   </div>
                 </TableCell>

@@ -28,10 +28,10 @@ export default async function EnquiryDetailPage({
       {convertError && (
         <p className="rounded-md bg-red-50 px-3 py-2 text-sm text-red-700">{convertError}</p>
       )}
-      <div className="flex flex-col gap-3 rounded-lg border border-slate-200 bg-white p-4 sm:flex-row sm:items-start sm:justify-between">
+      <div className="flex flex-col gap-3 rounded-lg border border-ink-200 bg-white p-4 sm:flex-row sm:items-start sm:justify-between">
         <div>
-          <h1 className="text-lg font-semibold text-slate-900">{name}</h1>
-          <div className="mt-1 flex flex-wrap gap-x-4 gap-y-1 text-sm text-slate-500">
+          <h1 className="page-title text-[1.375rem] leading-tight">{name}</h1>
+          <div className="mt-1 flex flex-wrap gap-x-4 gap-y-1 text-sm text-ink-500">
             {enquiry.email && (
               <span className="inline-flex items-center gap-1.5"><Mail className="h-3.5 w-3.5" /> {enquiry.email}</span>
             )}
@@ -91,7 +91,7 @@ export default async function EnquiryDetailPage({
               </Link>
             </Button>
           ) : (
-            <p className="text-sm text-slate-500">Convert this enquiry to a customer first, then you can build a quote for them.</p>
+            <p className="text-sm text-ink-500">Convert this enquiry to a customer first, then you can build a quote for them.</p>
           )}
         </CardContent>
       </Card>
@@ -102,8 +102,8 @@ export default async function EnquiryDetailPage({
 function Detail({ label, value, full }: { label: string; value: string; full?: boolean }) {
   return (
     <div className={full ? "sm:col-span-2" : undefined}>
-      <p className="text-xs font-medium uppercase tracking-wide text-slate-400">{label}</p>
-      <p className="whitespace-pre-wrap text-sm text-slate-800">{value}</p>
+      <p className="text-xs font-medium uppercase tracking-wide text-ink-400">{label}</p>
+      <p className="whitespace-pre-wrap text-sm text-ink-800">{value}</p>
     </div>
   );
 }

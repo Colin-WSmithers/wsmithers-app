@@ -24,8 +24,8 @@ export default async function ReportsPage() {
   return (
     <div className="flex flex-col gap-6">
       <div>
-        <h1 className="text-lg font-semibold text-slate-900">Reports</h1>
-        <p className="text-sm text-slate-500">Business performance, job profitability and staff utilisation.</p>
+        <h1 className="page-title text-[1.375rem] leading-tight">Reports</h1>
+        <p className="text-sm text-ink-500">Business performance, job profitability and staff utilisation.</p>
       </div>
 
       <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4">
@@ -68,14 +68,14 @@ export default async function ReportsPage() {
                   <Link
                     key={row.id}
                     href={`/invoices/${row.id}`}
-                    className="flex items-center justify-between gap-3 border-t border-slate-100 px-6 py-2.5 text-sm hover:bg-slate-50 first:border-t-0"
+                    className="flex items-center justify-between gap-3 border-t border-ink-100 px-6 py-2.5 text-sm hover:bg-ink-50 first:border-t-0"
                   >
                     <span>
-                      <span className="font-medium text-slate-900">{row.invoice_number}</span>
-                      <span className="ml-2 text-slate-500">{row.customer_name}</span>
+                      <span className="font-medium text-ink-900">{row.invoice_number}</span>
+                      <span className="ml-2 text-ink-500">{row.customer_name}</span>
                     </span>
                     <span className="flex items-center gap-3 text-right">
-                      <span className="text-xs text-slate-400">Due {formatDateUK(row.due_date)}</span>
+                      <span className="text-xs text-ink-400">Due {formatDateUK(row.due_date)}</span>
                       <span className="font-medium text-red-600">{formatCurrencyGBP(row.outstanding)}</span>
                     </span>
                   </Link>
@@ -99,10 +99,10 @@ export default async function ReportsPage() {
                 {data.staffHoursThisWeek.map((row) => (
                   <div
                     key={row.profile_id}
-                    className="flex items-center justify-between gap-3 border-t border-slate-100 px-6 py-2.5 text-sm first:border-t-0"
+                    className="flex items-center justify-between gap-3 border-t border-ink-100 px-6 py-2.5 text-sm first:border-t-0"
                   >
-                    <span className="font-medium text-slate-900">{row.full_name}</span>
-                    <span className="text-slate-600">{formatDurationMinutes(row.minutes)}</span>
+                    <span className="font-medium text-ink-900">{row.full_name}</span>
+                    <span className="text-ink-600">{formatDurationMinutes(row.minutes)}</span>
                   </div>
                 ))}
               </div>
@@ -124,7 +124,7 @@ export default async function ReportsPage() {
             <div className="overflow-x-auto">
               <table className="w-full text-sm">
                 <thead>
-                  <tr className="border-t border-slate-100 text-left text-xs uppercase tracking-wide text-slate-400">
+                  <tr className="border-t border-ink-100 text-left text-xs uppercase tracking-wide text-ink-400">
                     <th className="px-6 py-2 font-medium">Job</th>
                     <th className="px-3 py-2 font-medium">Status</th>
                     <th className="px-3 py-2 text-right font-medium">Estimated value</th>
@@ -134,16 +134,16 @@ export default async function ReportsPage() {
                 </thead>
                 <tbody>
                   {data.jobProfitability.map((row) => (
-                    <tr key={row.id} className="border-t border-slate-100 hover:bg-slate-50">
+                    <tr key={row.id} className="border-t border-ink-100 hover:bg-ink-50">
                       <td className="px-6 py-2.5">
-                        <Link href={`/jobs/${row.id}`} className="font-medium text-slate-900 hover:underline">
+                        <Link href={`/jobs/${row.id}`} className="font-medium text-ink-900 hover:underline">
                           {row.job_number}
                         </Link>
-                        <span className="ml-2 text-slate-500">{row.job_name}</span>
+                        <span className="ml-2 text-ink-500">{row.job_name}</span>
                       </td>
-                      <td className="px-3 py-2.5 capitalize text-slate-600">{row.status.replace(/_/g, " ")}</td>
-                      <td className="px-3 py-2.5 text-right text-slate-600">{formatCurrencyGBP(row.estimated_value)}</td>
-                      <td className="px-3 py-2.5 text-right text-slate-600">{formatCurrencyGBP(row.actual_cost)}</td>
+                      <td className="px-3 py-2.5 capitalize text-ink-600">{row.status.replace(/_/g, " ")}</td>
+                      <td className="px-3 py-2.5 text-right text-ink-600">{formatCurrencyGBP(row.estimated_value)}</td>
+                      <td className="px-3 py-2.5 text-right text-ink-600">{formatCurrencyGBP(row.actual_cost)}</td>
                       <td className={`px-6 py-2.5 text-right font-medium ${row.margin < 0 ? "text-red-600" : "text-emerald-600"}`}>
                         {formatCurrencyGBP(row.margin)}
                       </td>

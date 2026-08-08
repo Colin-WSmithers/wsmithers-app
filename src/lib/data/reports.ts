@@ -1,5 +1,6 @@
 import "server-only";
 import { createClient } from "@/lib/supabase/server";
+import { londonDateKey, londonDayStart, londonMonthStartKey, londonWeekStartKey } from "@/lib/utils";
 
 export interface JobProfitabilityRow {
   id: string;
@@ -41,31 +42,19 @@ export interface ReportsData {
   openPurchaseOrdersValue: number;
 }
 
-function startOfMonth(): string {
-  const d = new Date();
-  return new Date(d.getFullYear(), d.getMonth(), 1).toISOString().slice(0, 10);
-}
-
-function startOfWeek(): string {
-  const d = new Date();
-  const day = d.getDay();
-  const diff = day === 0 ? -6 : 1 - day;
-  d.setDate(d.getDate() + diff);
-  d.setHours(0, 0, 0, 0);
-  return d.toISOString();
-}
-
+// All boundaries below are London-local (see lib/utils) rather than UTC, so
+// "this month" / "this week" line up with how the office actually counts them.
 function daysAgo(n: number): string {
-  const d = new Date();
-  d.setDate(d.getDate() - n);
-  return d.toISOString().slice(0, 10);
+  const today = londonDateKey();
+  const [y, m, d] = today.split("-").map(Number);
+  return londonDateKey(new Date(Date.UTC(y, m - 1, d - n, 12)));
 }
 
 export async function getReportsData(): Promise<ReportsData> {
   const supabase = await createClient();
-  const monthStart = startOfMonth();
-  const weekStart = startOfWeek();
-  const today = new Date().toISOString().slice(0, 10);
+  const monthStart = londonMonthStartKey();
+  const weekStart = londonDayStart(londonWeekStartKey()).toISOString();
+  const today = londonDateKey();
 
   const [invoicesRes, paymentsRes, quotesRes, jobsRes, timesheetsRes, posRes] = await Promise.all([
     supabase

@@ -149,12 +149,24 @@ export async function uploadJobPhotoAction(_prevState: FormState, formData: Form
   if (file.size > MAX_UPLOAD_BYTES) {
     return { error: "That photo is too large (max 15MB)." };
   }
-  if (file.type && !ALLOWED_IMAGE_TYPES.includes(file.type)) {
+  // Note the missing `file.type &&` guard here compared with the original: an
+  // empty Content-Type is fully client-controlled, so treating it as "unknown,
+  // allow it" let any file through.
+  if (!ALLOWED_IMAGE_TYPES.includes(file.type)) {
     return { error: "Please upload a JPEG, PNG, WEBP or HEIC photo." };
   }
 
   const supabase = await createClient();
-  const extension = file.name.includes(".") ? file.name.split(".").pop() : "jpg";
+  // Derive the extension from the (already allow-listed) MIME type rather than
+  // the client-supplied filename, so nothing user-controlled reaches the path.
+  const EXT_BY_TYPE: Record<string, string> = {
+    "image/jpeg": "jpg",
+    "image/png": "png",
+    "image/webp": "webp",
+    "image/heic": "heic",
+    "image/heif": "heif",
+  };
+  const extension = EXT_BY_TYPE[file.type] ?? "jpg";
   const path = `${parsed.data.job_id}/${randomUUID()}.${extension}`;
 
   const { error: uploadError } = await supabase.storage.from("job-photos").upload(path, file, {
@@ -218,7 +230,7 @@ export async function uploadJobDocumentAction(_prevState: FormState, formData: F
   if (file.size > MAX_UPLOAD_BYTES) {
     return { error: "That file is too large (max 15MB)." };
   }
-  if (file.type && !ALLOWED_DOCUMENT_TYPES.includes(file.type)) {
+  if (!ALLOWED_DOCUMENT_TYPES.includes(file.type)) {
     return { error: "Please upload a PDF, Word, Excel or image file." };
   }
 
@@ -228,7 +240,11 @@ export async function uploadJobDocumentAction(_prevState: FormState, formData: F
   }
 
   const supabase = await createClient();
-  const path = `${jobId}/${randomUUID()}-${file.name}`;
+  // The original filename is kept in the `filename` column for display; it must
+  // not shape the storage key, or "../" in a filename would let the object land
+  // outside this job's folder (which is what the storage policies key off).
+  const safeName = file.name.replace(/[^a-zA-Z0-9._-]/g, "_").slice(-80);
+  const path = `${jobId}/${randomUUID()}-${safeName}`;
 
   const { error: uploadError } = await supabase.storage.from("documents").upload(path, file, {
     contentType: file.type || "application/octet-stream",

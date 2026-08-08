@@ -49,10 +49,10 @@ function EndShiftForm({ shift }: { shift: OpenShift }) {
       <input type="hidden" name="id" value={shift.id} />
       <div>
         <p className="text-xs font-semibold uppercase tracking-wide text-emerald-600">Clocked in</p>
-        <p className="text-lg font-semibold text-slate-900">
+        <p className="text-lg font-semibold text-ink-900">
           {shift.job ? `${shift.job.job_number} — ${shift.job.job_name}` : "Job"}
         </p>
-        <p className="text-sm text-slate-500">Running for {elapsed}</p>
+        <p className="text-sm text-ink-500">Running for {elapsed}</p>
       </div>
       <div className="flex items-end gap-3">
         <div className="flex flex-col gap-1.5">
@@ -72,7 +72,7 @@ function StartShiftForm({ jobs }: { jobs: JobOption[] }) {
   const [state, formAction, pending] = useActionState(startShiftAction, initialState);
 
   if (jobs.length === 0) {
-    return <p className="text-sm text-slate-500">You&apos;re not assigned to any jobs yet, so there&apos;s nothing to clock into.</p>;
+    return <p className="text-sm text-ink-500">You&apos;re not assigned to any jobs yet, so there&apos;s nothing to clock into.</p>;
   }
 
   return (

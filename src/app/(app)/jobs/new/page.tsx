@@ -25,8 +25,8 @@ export default async function NewJobPage({
   return (
     <div className="mx-auto flex max-w-3xl flex-col gap-6">
       <div>
-        <h1 className="text-lg font-semibold text-slate-900">New job</h1>
-        <p className="text-sm text-slate-500">Create a job from scratch and assign the crew who&apos;ll work it.</p>
+        <h1 className="page-title text-[1.375rem] leading-tight">New job</h1>
+        <p className="text-sm text-ink-500">Create a job from scratch and assign the crew who&apos;ll work it.</p>
       </div>
       <JobForm customers={customers} sites={sites} staff={staff} defaultCustomerId={customer_id} />
     </div>

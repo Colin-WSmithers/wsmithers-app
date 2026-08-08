@@ -56,7 +56,7 @@ export function EditStaffDialog({ staff, isSelf }: { staff: Profile; isSelf: boo
                 </SelectContent>
               </Select>
               {isSelf && <input type="hidden" name="role" value={staff.role} />}
-              {isSelf && <p className="text-xs text-slate-400">You can&apos;t change your own role.</p>}
+              {isSelf && <p className="text-xs text-ink-400">You can&apos;t change your own role.</p>}
             </div>
             <div className="flex flex-col gap-1.5">
               <Label htmlFor="job_title">Job title</Label>
@@ -71,8 +71,8 @@ export function EditStaffDialog({ staff, isSelf }: { staff: Profile; isSelf: boo
               <Input id="hourly_rate" name="hourly_rate" type="number" step="0.01" min="0" defaultValue={staff.hourly_rate ?? ""} />
             </div>
           </div>
-          <label className="flex items-center gap-2 text-sm text-slate-600">
-            <input type="checkbox" name="is_active" defaultChecked={staff.is_active} className="h-4 w-4 rounded border-slate-300" />
+          <label className="flex items-center gap-2 text-sm text-ink-600">
+            <input type="checkbox" name="is_active" defaultChecked={staff.is_active} className="h-4 w-4 rounded border-ink-300" />
             Active (assignable to jobs, appears in pickers)
           </label>
           {state.error && <p className="text-sm text-red-600">{state.error}</p>}

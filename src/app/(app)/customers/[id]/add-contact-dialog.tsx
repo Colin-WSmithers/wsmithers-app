@@ -57,8 +57,8 @@ export function AddContactDialog({ customerId }: { customerId: string }) {
               <Input id="phone" name="phone" type="tel" />
             </div>
           </div>
-          <label className="flex items-center gap-2 text-sm text-slate-600">
-            <input type="checkbox" name="is_primary" className="h-4 w-4 rounded border-slate-300" />
+          <label className="flex items-center gap-2 text-sm text-ink-600">
+            <input type="checkbox" name="is_primary" className="h-4 w-4 rounded border-ink-300" />
             Primary contact for this customer
           </label>
           {state.error && <p className="text-sm text-red-600">{state.error}</p>}

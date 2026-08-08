@@ -28,6 +28,14 @@ export async function requireProfile(): Promise<Profile> {
     redirect("/login");
   }
 
+  // Deactivating someone in the Staff screen has to actually revoke access.
+  // Their Supabase session stays valid until it expires, so check on every
+  // request rather than trusting the token alone.
+  if (!(profile as Profile).is_active) {
+    await supabase.auth.signOut();
+    redirect("/login?inactive=1");
+  }
+
   return profile as Profile;
 }
 

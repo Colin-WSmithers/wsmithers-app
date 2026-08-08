@@ -22,9 +22,9 @@ SheetOverlay.displayName = DialogPrimitive.Overlay.displayName;
 const sheetVariants = cva("fixed z-50 gap-4 bg-white p-5 shadow-lg", {
   variants: {
     side: {
-      left: "inset-y-0 left-0 h-full w-72 border-r border-slate-200",
-      right: "inset-y-0 right-0 h-full w-72 border-l border-slate-200",
-      bottom: "inset-x-0 bottom-0 border-t border-slate-200 rounded-t-lg",
+      left: "inset-y-0 left-0 h-full w-72 border-r border-ink-200",
+      right: "inset-y-0 right-0 h-full w-72 border-l border-ink-200",
+      bottom: "inset-x-0 bottom-0 border-t border-ink-200 rounded-t-lg",
     },
   },
   defaultVariants: { side: "left" },
@@ -58,7 +58,7 @@ const SheetTitle = React.forwardRef<
   React.ElementRef<typeof DialogPrimitive.Title>,
   React.ComponentPropsWithoutRef<typeof DialogPrimitive.Title>
 >(({ className, ...props }, ref) => (
-  <DialogPrimitive.Title ref={ref} className={cn("text-base font-semibold text-slate-900", className)} {...props} />
+  <DialogPrimitive.Title ref={ref} className={cn("text-base font-semibold text-ink-900", className)} {...props} />
 ));
 SheetTitle.displayName = DialogPrimitive.Title.displayName;
 

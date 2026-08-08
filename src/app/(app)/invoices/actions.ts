@@ -6,6 +6,7 @@ import { createClient } from "@/lib/supabase/server";
 import { requireProfile, isOfficeOrAdmin } from "@/lib/data/auth";
 import { invoiceSchema, invoiceStatusUpdateSchema, paymentSchema } from "@/lib/validation/invoices";
 import { parseLineItemRows, sumLineItems } from "@/lib/line-items";
+import { formatCurrencyGBP } from "@/lib/utils";
 import type { Invoice } from "@/lib/supabase/types";
 
 export interface FormState {
@@ -27,12 +28,13 @@ export async function createInvoiceAction(_prevState: FormState, formData: FormD
     return { error: parsed.error.issues[0]?.message ?? "Please check the form and try again." };
   }
 
-  const items = parseLineItemRows(formData, {
+  const { rows: items, error: itemsError } = parseLineItemRows(formData, {
     description: "line_description",
     quantity: "line_quantity",
     unitPrice: "line_unit_price",
     vatRate: "line_vat_rate",
   });
+  if (itemsError) return { error: itemsError };
   if (items.length === 0) {
     return { error: "Add at least one line item." };
   }
@@ -68,7 +70,9 @@ export async function createInvoiceAction(_prevState: FormState, formData: FormD
     return { error: "Could not create the invoice — please try again." };
   }
 
-  await supabase.from("invoice_items").insert(
+  // An invoice with a total but no line items would go to a customer blank —
+  // roll back rather than reporting success.
+  const { error: itemsInsertError } = await supabase.from("invoice_items").insert(
     items.map((item, index) => ({
       invoice_id: invoice.id,
       sort_order: index,
@@ -79,6 +83,10 @@ export async function createInvoiceAction(_prevState: FormState, formData: FormD
       line_total: item.line_total,
     }))
   );
+  if (itemsInsertError) {
+    await supabase.from("invoices").delete().eq("id", invoice.id);
+    return { error: "Could not save the invoice's line items — please try again." };
+  }
 
   revalidatePath("/invoices");
   redirect(`/invoices/${invoice.id}`);
@@ -95,7 +103,26 @@ export async function updateInvoiceStatusAction(_prevState: FormState, formData:
     return { error: "Invalid status." };
   }
 
+  // paid / part_paid / overdue are derived — the recalc_invoice_paid_status
+  // trigger owns the first two and the nightly cron owns the third. Setting
+  // them by hand would put the invoice and its payment ledger out of step.
+  if (["paid", "part_paid", "overdue"].includes(parsed.data.status)) {
+    return { error: "That status is set automatically from payments — record a payment instead." };
+  }
+
   const supabase = await createClient();
+  const { data: invoice } = await supabase
+    .from("invoices")
+    .select("amount_paid, status")
+    .eq("id", parsed.data.id)
+    .maybeSingle();
+  if (!invoice) {
+    return { error: "Invoice not found." };
+  }
+  if (parsed.data.status === "void" && Number(invoice.amount_paid) > 0) {
+    return { error: "This invoice has payments recorded against it, so it can't be voided." };
+  }
+
   const update: Partial<Invoice> = { status: parsed.data.status };
   if (parsed.data.status === "sent") update.sent_at = new Date().toISOString();
 
@@ -126,6 +153,32 @@ export async function recordPaymentAction(_prevState: FormState, formData: FormD
   }
 
   const supabase = await createClient();
+
+  // Guard the ledger: no paying a void/draft invoice, and no overpayment
+  // (which would silently corrupt aged-debt and VAT reporting, with no
+  // delete-payment action available to undo it).
+  const { data: invoice } = await supabase
+    .from("invoices")
+    .select("total, amount_paid, status")
+    .eq("id", parsed.data.invoice_id)
+    .maybeSingle();
+  if (!invoice) {
+    return { error: "Invoice not found." };
+  }
+  if (invoice.status === "void") {
+    return { error: "This invoice has been voided — no payments can be recorded against it." };
+  }
+  if (invoice.status === "draft") {
+    return { error: "Send the invoice before recording a payment against it." };
+  }
+  const outstanding = Math.round((Number(invoice.total) - Number(invoice.amount_paid)) * 100) / 100;
+  if (outstanding <= 0) {
+    return { error: "This invoice is already paid in full." };
+  }
+  if (parsed.data.amount > outstanding) {
+    return { error: `That's more than the ${formatCurrencyGBP(outstanding)} outstanding on this invoice.` };
+  }
+
   const { error } = await supabase.from("payments").insert({
     invoice_id: parsed.data.invoice_id,
     amount: parsed.data.amount,

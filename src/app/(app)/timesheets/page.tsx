@@ -25,8 +25,8 @@ export default async function TimesheetsPage() {
   return (
     <div className="flex flex-col gap-6">
       <div>
-        <h1 className="text-lg font-semibold text-slate-900">Timesheets</h1>
-        <p className="text-sm text-slate-500">
+        <h1 className="page-title text-[1.375rem] leading-tight">Timesheets</h1>
+        <p className="text-sm text-ink-500">
           {office ? "Review and approve hours logged across every job." : "Clock in/out on jobs and review your logged hours."}
         </p>
       </div>
@@ -45,7 +45,7 @@ export default async function TimesheetsPage() {
           {myTimesheets.length === 0 ? (
             <EmptyState icon={Clock} title="No hours logged yet" description="Clock in on a job or add a manual entry to get started." />
           ) : (
-            <div className="overflow-hidden rounded-lg border border-slate-200">
+            <div className="overflow-hidden rounded-lg border border-ink-200">
               <Table>
                 <TableHeader>
                   <TableRow>
@@ -88,7 +88,7 @@ export default async function TimesheetsPage() {
             {allTimesheets.length === 0 ? (
               <EmptyState icon={Clock} title="No hours logged yet" description="Once the crew starts clocking in, entries will appear here for approval." />
             ) : (
-              <div className="overflow-hidden rounded-lg border border-slate-200">
+              <div className="overflow-hidden rounded-lg border border-ink-200">
                 <Table>
                   <TableHeader>
                     <TableRow>

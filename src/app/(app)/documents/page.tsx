@@ -19,13 +19,13 @@ export default async function DocumentsPage({
   return (
     <div className="flex flex-col gap-4">
       <div>
-        <h1 className="text-lg font-semibold text-slate-900">Documents</h1>
-        <p className="text-sm text-slate-500">Every job document you have access to, in one place.</p>
+        <h1 className="page-title text-[1.375rem] leading-tight">Documents</h1>
+        <p className="text-sm text-ink-500">Every job document you have access to, in one place.</p>
       </div>
 
       <form className="flex max-w-sm items-center gap-2">
         <div className="relative flex-1">
-          <Search className="pointer-events-none absolute left-2.5 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
+          <Search className="pointer-events-none absolute left-2.5 top-1/2 h-4 w-4 -translate-y-1/2 text-ink-400" />
           <Input name="q" defaultValue={q} placeholder="Search by filename…" className="pl-8" />
         </div>
         <Button type="submit" variant="outline" size="sm">Search</Button>
@@ -38,7 +38,7 @@ export default async function DocumentsPage({
           description={q ? "Try a different filename." : "Documents uploaded to a job (plans, contracts, certificates and more) will show up here."}
         />
       ) : (
-        <div className="overflow-hidden rounded-lg border border-slate-200 bg-white">
+        <div className="overflow-hidden rounded-lg border border-ink-200 bg-white">
           <Table>
             <TableHeader>
               <TableRow>
@@ -54,17 +54,17 @@ export default async function DocumentsPage({
                 <TableRow key={doc.id}>
                   <TableCell>
                     {doc.signed_url ? (
-                      <a href={doc.signed_url} target="_blank" rel="noreferrer" className="font-medium text-slate-900 hover:underline">
+                      <a href={doc.signed_url} target="_blank" rel="noreferrer" className="font-medium text-ink-900 hover:underline">
                         {doc.filename}
                       </a>
                     ) : (
                       doc.filename
                     )}
-                    {doc.description && <p className="text-xs text-slate-500">{doc.description}</p>}
+                    {doc.description && <p className="text-xs text-ink-500">{doc.description}</p>}
                   </TableCell>
                   <TableCell>
                     {doc.job ? (
-                      <Link href={`/jobs/${doc.job.id}`} className="text-slate-600 hover:underline">
+                      <Link href={`/jobs/${doc.job.id}`} className="text-ink-600 hover:underline">
                         {doc.job.job_number}
                       </Link>
                     ) : (

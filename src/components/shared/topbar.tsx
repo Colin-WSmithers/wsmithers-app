@@ -1,8 +1,9 @@
 "use client";
 
 import Link from "next/link";
-import { useState } from "react";
-import { Menu, Search, Bell, LogOut, Settings as SettingsIcon } from "lucide-react";
+import { useState, useTransition } from "react";
+import { useRouter } from "next/navigation";
+import { Menu, Search, Bell, LogOut, Settings as SettingsIcon, CheckCheck } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
@@ -10,11 +11,11 @@ import {
   DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuLabel,
 } from "@/components/ui/dropdown-menu";
 import { Sheet, SheetTrigger, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
-import type { NavItem } from "@/lib/nav-config";
-import type { Notification } from "@/lib/supabase/types";
+import { navItemsForRole } from "@/lib/nav-config";
+import { LogoMark } from "@/components/shared/logo";
+import { cn } from "@/lib/utils";
+import type { Notification, UserRole } from "@/lib/supabase/types";
 import { signOutAction, markNotificationReadAction, markAllNotificationsReadAction } from "@/app/(app)/actions";
-import { useRouter } from "next/navigation";
-import { useTransition } from "react";
 
 function timeAgo(iso: string): string {
   const diffMs = Date.now() - new Date(iso).getTime();
@@ -37,19 +38,20 @@ function initials(name: string) {
     .toUpperCase();
 }
 
+// See sidebar.tsx for why nav items (with their icon components) are
+// computed here from a plain `role` prop rather than passed in as data.
 export function Topbar({
   fullName,
   role,
-  allNavItems,
   unreadNotifications,
   notifications,
 }: {
   fullName: string;
-  role: string;
-  allNavItems: NavItem[];
+  role: UserRole;
   unreadNotifications: number;
   notifications: Notification[];
 }) {
+  const allNavItems = navItemsForRole(role);
   const [menuOpen, setMenuOpen] = useState(false);
   const [notifOpen, setNotifOpen] = useState(false);
   const router = useRouter();
@@ -68,28 +70,31 @@ export function Topbar({
   }
 
   return (
-    <header className="sticky top-0 z-30 flex h-14 items-center gap-3 border-b border-slate-200 bg-white px-4">
-      {/* Mobile menu trigger — full nav list lives here since the bottom bar
-          only has room for 4 shortcuts. */}
+    <header className="sticky top-0 z-30 flex h-16 items-center gap-3 border-b border-ink-200/80 bg-white/90 px-4 backdrop-blur-md lg:px-6">
+      {/* Mobile menu — the bottom bar only has room for 4 shortcuts, so the
+          full role-filtered nav lives in this slide-out sheet. */}
       <Sheet open={menuOpen} onOpenChange={setMenuOpen}>
         <SheetTrigger asChild>
-          <Button variant="ghost" size="icon" className="lg:hidden">
+          <Button variant="ghost" size="icon" className="lg:hidden" aria-label="Open menu">
             <Menu className="h-5 w-5" />
           </Button>
         </SheetTrigger>
         <SheetContent side="left">
           <SheetHeader>
-            <SheetTitle>Menu</SheetTitle>
+            <SheetTitle className="flex items-center gap-2">
+              <LogoMark className="h-6" />
+              <span className="font-display text-sm font-semibold tracking-tight">Menu</span>
+            </SheetTitle>
           </SheetHeader>
-          <nav className="mt-4 flex flex-col gap-1">
+          <nav className="mt-5 flex flex-col gap-0.5">
             {allNavItems.map((item) => (
               <Link
                 key={item.href}
                 href={item.href}
                 onClick={() => setMenuOpen(false)}
-                className="flex items-center gap-3 rounded-md px-3 py-2 text-sm font-medium text-slate-700 hover:bg-slate-100"
+                className="flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium text-ink-700 transition-colors hover:bg-brand-50 hover:text-brand-800"
               >
-                <item.icon className="h-4 w-4" />
+                <item.icon className="h-[1.125rem] w-[1.125rem] text-ink-400" />
                 {item.label}
               </Link>
             ))}
@@ -97,12 +102,14 @@ export function Topbar({
         </SheetContent>
       </Sheet>
 
-      <form action="/search" method="GET" className="relative hidden max-w-sm flex-1 sm:block">
-        <Search className="pointer-events-none absolute left-2.5 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
+      <LogoMark className="h-7 lg:hidden" />
+
+      <form action="/search" method="GET" className="relative hidden max-w-md flex-1 sm:block">
+        <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-ink-400" />
         <Input
           name="q"
           placeholder="Search jobs, customers, invoices…"
-          className="pl-8"
+          className="h-10 rounded-full bg-ink-50 pl-9 shadow-none"
           aria-label="Global search"
         />
       </form>
@@ -110,52 +117,59 @@ export function Topbar({
       <div className="ml-auto flex items-center gap-1">
         <DropdownMenu open={notifOpen} onOpenChange={setNotifOpen}>
           <DropdownMenuTrigger asChild>
-            <Button variant="ghost" size="icon" className="relative" aria-label="Notifications">
+            <Button variant="ghost" size="icon" className="relative" aria-label={`Notifications${unreadNotifications > 0 ? ` (${unreadNotifications} unread)` : ""}`}>
               <Bell className="h-5 w-5" />
               {unreadNotifications > 0 && (
-                <span className="absolute right-1.5 top-1.5 flex h-2 w-2 rounded-full bg-red-500" />
+                <span className="absolute right-1 top-1 flex h-4 min-w-4 items-center justify-center rounded-full bg-brand-600 px-1 text-[10px] font-semibold leading-none text-white ring-2 ring-white">
+                  {unreadNotifications > 9 ? "9+" : unreadNotifications}
+                </span>
               )}
             </Button>
           </DropdownMenuTrigger>
-          <DropdownMenuContent align="end" className="w-80 p-0">
-            <div className="flex items-center justify-between px-3 py-2">
-              <DropdownMenuLabel className="p-0 text-sm">Notifications</DropdownMenuLabel>
+          <DropdownMenuContent align="end" className="w-[21rem] overflow-hidden p-0">
+            <div className="flex items-center justify-between border-b border-ink-100 px-4 py-2.5">
+              <DropdownMenuLabel className="p-0 font-display text-sm font-semibold tracking-tight">
+                Notifications
+              </DropdownMenuLabel>
               {unreadNotifications > 0 && (
                 <button
                   type="button"
-                  className="text-xs font-medium text-blue-600 hover:underline"
+                  className="flex items-center gap-1 text-xs font-medium text-brand-700 hover:underline"
                   onClick={() =>
                     startTransition(() => {
                       void markAllNotificationsReadAction();
                     })
                   }
                 >
-                  Mark all as read
+                  <CheckCheck className="h-3.5 w-3.5" /> Mark all read
                 </button>
               )}
             </div>
-            <DropdownMenuSeparator className="my-0" />
-            <div className="max-h-96 overflow-y-auto">
+            <div className="max-h-[24rem] overflow-y-auto">
               {notifications.length === 0 ? (
-                <p className="px-3 py-6 text-center text-sm text-slate-400">No notifications yet.</p>
+                <div className="flex flex-col items-center gap-1.5 px-4 py-10 text-center">
+                  <Bell className="h-6 w-6 text-ink-300" />
+                  <p className="text-sm text-ink-400">Nothing yet.</p>
+                </div>
               ) : (
                 notifications.map((n) => (
                   <button
                     key={n.id}
                     type="button"
                     onClick={() => handleNotificationClick(n)}
-                    className={`flex w-full flex-col gap-0.5 border-b border-slate-50 px-3 py-2.5 text-left last:border-b-0 hover:bg-slate-50 ${
-                      n.is_read ? "" : "bg-blue-50/60"
-                    }`}
+                    className={cn(
+                      "flex w-full flex-col gap-0.5 border-b border-ink-100 px-4 py-3 text-left transition-colors last:border-b-0 hover:bg-ink-50",
+                      !n.is_read && "bg-brand-50/50"
+                    )}
                   >
                     <span className="flex items-start justify-between gap-2">
-                      <span className={`text-sm ${n.is_read ? "font-medium text-slate-700" : "font-semibold text-slate-900"}`}>
+                      <span className={cn("text-sm leading-snug", n.is_read ? "font-medium text-ink-700" : "font-semibold text-ink-900")}>
                         {n.title}
                       </span>
-                      {!n.is_read && <span className="mt-1 h-1.5 w-1.5 shrink-0 rounded-full bg-blue-600" />}
+                      {!n.is_read && <span className="mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full bg-brand-600" />}
                     </span>
-                    {n.body && <span className="text-xs text-slate-500">{n.body}</span>}
-                    <span className="text-[11px] text-slate-400">{timeAgo(n.created_at)}</span>
+                    {n.body && <span className="text-xs leading-relaxed text-ink-500">{n.body}</span>}
+                    <span className="mt-0.5 text-[11px] text-ink-400">{timeAgo(n.created_at)}</span>
                   </button>
                 ))
               )}
@@ -165,18 +179,23 @@ export function Topbar({
 
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
-            <button className="ml-1 flex items-center gap-2 rounded-md px-1.5 py-1 hover:bg-slate-100">
+            <button className="ml-1 flex items-center gap-2.5 rounded-full py-1 pl-1 pr-2 transition-colors hover:bg-ink-100">
               <Avatar className="h-8 w-8">
                 <AvatarFallback>{initials(fullName)}</AvatarFallback>
               </Avatar>
               <span className="hidden text-left sm:block">
-                <span className="block text-sm font-medium leading-tight text-slate-900">{fullName}</span>
-                <span className="block text-xs capitalize leading-tight text-slate-500">{role}</span>
+                <span className="block text-sm font-medium leading-tight text-ink-900">{fullName}</span>
+                <span className="block font-display text-[0.625rem] font-semibold uppercase leading-tight tracking-[0.1em] text-brand-600">
+                  {role}
+                </span>
               </span>
             </button>
           </DropdownMenuTrigger>
-          <DropdownMenuContent align="end">
-            <DropdownMenuLabel>My account</DropdownMenuLabel>
+          <DropdownMenuContent align="end" className="w-56">
+            <DropdownMenuLabel className="flex flex-col gap-0.5">
+              <span className="text-sm font-semibold text-ink-900">{fullName}</span>
+              <span className="text-xs font-normal capitalize text-ink-500">{role}</span>
+            </DropdownMenuLabel>
             <DropdownMenuSeparator />
             {role === "admin" && (
               <DropdownMenuItem asChild>

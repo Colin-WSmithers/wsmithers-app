@@ -26,10 +26,10 @@ export default async function InvoiceDetailPage({ params }: { params: Promise<{ 
 
   return (
     <div className="flex flex-col gap-6">
-      <div className="flex flex-col gap-3 rounded-lg border border-slate-200 bg-white p-4 sm:flex-row sm:items-start sm:justify-between">
+      <div className="flex flex-col gap-3 rounded-lg border border-ink-200 bg-white p-4 sm:flex-row sm:items-start sm:justify-between">
         <div>
-          <h1 className="text-lg font-semibold text-slate-900">{invoice.invoice_number}</h1>
-          <p className="mt-1 flex flex-wrap items-center gap-x-4 gap-y-1 text-sm text-slate-500">
+          <h1 className="page-title text-[1.375rem] leading-tight">{invoice.invoice_number}</h1>
+          <p className="mt-1 flex flex-wrap items-center gap-x-4 gap-y-1 text-sm text-ink-500">
             <span>{invoice.customer?.display_name ?? "—"}</span>
             {invoice.job && (
               <Link href={`/jobs/${invoice.job.id}`} className="hover:underline">{invoice.job.job_number} — {invoice.job.job_name}</Link>
@@ -77,16 +77,16 @@ export default async function InvoiceDetailPage({ params }: { params: Promise<{ 
               </TableBody>
             </Table>
             <div className="mt-4 flex flex-col items-end gap-1 text-sm">
-              <span className="text-slate-500">Subtotal: {formatCurrencyGBP(invoice.subtotal)}</span>
-              <span className="text-slate-500">VAT: {formatCurrencyGBP(invoice.vat_total)}</span>
-              <span className="text-base font-semibold text-slate-900">Total: {formatCurrencyGBP(invoice.total)}</span>
-              <span className="text-slate-500">Paid: {formatCurrencyGBP(invoice.amount_paid)}</span>
+              <span className="text-ink-500">Subtotal: {formatCurrencyGBP(invoice.subtotal)}</span>
+              <span className="text-ink-500">VAT: {formatCurrencyGBP(invoice.vat_total)}</span>
+              <span className="text-base font-semibold text-ink-900">Total: {formatCurrencyGBP(invoice.total)}</span>
+              <span className="text-ink-500">Paid: {formatCurrencyGBP(invoice.amount_paid)}</span>
               {outstanding > 0 && <span className="font-medium text-red-600">Outstanding: {formatCurrencyGBP(outstanding)}</span>}
             </div>
             {invoice.terms && (
-              <div className="mt-4 border-t border-slate-100 pt-3">
-                <p className="text-xs font-medium uppercase tracking-wide text-slate-400">Terms</p>
-                <p className="whitespace-pre-wrap text-sm text-slate-700">{invoice.terms}</p>
+              <div className="mt-4 border-t border-ink-100 pt-3">
+                <p className="text-xs font-medium uppercase tracking-wide text-ink-400">Terms</p>
+                <p className="whitespace-pre-wrap text-sm text-ink-700">{invoice.terms}</p>
               </div>
             )}
           </CardContent>
@@ -98,14 +98,14 @@ export default async function InvoiceDetailPage({ params }: { params: Promise<{ 
               <CardTitle>Customer</CardTitle>
             </CardHeader>
             <CardContent className="flex flex-col gap-2 text-sm">
-              <p className="font-medium text-slate-900">{invoice.customer?.display_name}</p>
+              <p className="font-medium text-ink-900">{invoice.customer?.display_name}</p>
               {invoice.customer?.email && (
-                <p className="flex items-center gap-1.5 text-slate-600"><Mail className="h-3.5 w-3.5 text-slate-400" /> {invoice.customer.email}</p>
+                <p className="flex items-center gap-1.5 text-ink-600"><Mail className="h-3.5 w-3.5 text-ink-400" /> {invoice.customer.email}</p>
               )}
               {invoice.customer?.phone && (
-                <p className="flex items-center gap-1.5 text-slate-600"><Phone className="h-3.5 w-3.5 text-slate-400" /> {invoice.customer.phone}</p>
+                <p className="flex items-center gap-1.5 text-ink-600"><Phone className="h-3.5 w-3.5 text-ink-400" /> {invoice.customer.phone}</p>
               )}
-              <div className="mt-2 border-t border-slate-100 pt-2 text-xs text-slate-500">
+              <div className="mt-2 border-t border-ink-100 pt-2 text-xs text-ink-500">
                 <p>Issued {formatDateUK(invoice.issue_date)}</p>
                 <p>Due {formatDateUK(invoice.due_date)}</p>
               </div>
@@ -118,16 +118,16 @@ export default async function InvoiceDetailPage({ params }: { params: Promise<{ 
             </CardHeader>
             <CardContent>
               {invoice.payments.length === 0 ? (
-                <p className="text-sm text-slate-500">No payments recorded yet.</p>
+                <p className="text-sm text-ink-500">No payments recorded yet.</p>
               ) : (
-                <ul className="divide-y divide-slate-100">
+                <ul className="divide-y divide-ink-100">
                   {invoice.payments.map((p) => (
                     <li key={p.id} className="py-2 text-sm">
                       <div className="flex items-center justify-between">
-                        <span className="font-medium text-slate-900">{formatCurrencyGBP(p.amount)}</span>
-                        <span className="text-xs capitalize text-slate-500">{p.method.replace(/_/g, " ")}</span>
+                        <span className="font-medium text-ink-900">{formatCurrencyGBP(p.amount)}</span>
+                        <span className="text-xs capitalize text-ink-500">{p.method.replace(/_/g, " ")}</span>
                       </div>
-                      <p className="text-xs text-slate-400">{formatDateUK(p.paid_date)}{p.reference ? ` · ${p.reference}` : ""}</p>
+                      <p className="text-xs text-ink-400">{formatDateUK(p.paid_date)}{p.reference ? ` · ${p.reference}` : ""}</p>
                     </li>
                   ))}
                 </ul>

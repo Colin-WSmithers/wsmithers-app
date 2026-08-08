@@ -14,8 +14,8 @@ export default async function SettingsPage() {
   return (
     <div className="mx-auto flex max-w-3xl flex-col gap-6">
       <div>
-        <h1 className="text-lg font-semibold text-slate-900">Company settings</h1>
-        <p className="text-sm text-slate-500">
+        <h1 className="page-title text-[1.375rem] leading-tight">Company settings</h1>
+        <p className="text-sm text-ink-500">
           These details appear on quotes, invoices and purchase orders, and control document numbering.
         </p>
       </div>

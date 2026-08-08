@@ -18,8 +18,8 @@ export default async function SubcontractorsPage() {
     <div className="flex flex-col gap-4">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-lg font-semibold text-slate-900">Subcontractors</h1>
-          <p className="text-sm text-slate-500">Trades and rates — assignable to jobs and appointments alongside staff.</p>
+          <h1 className="page-title text-[1.375rem] leading-tight">Subcontractors</h1>
+          <p className="text-sm text-ink-500">Trades and rates — assignable to jobs and appointments alongside staff.</p>
         </div>
         <AddSubcontractorDialog />
       </div>
@@ -31,7 +31,7 @@ export default async function SubcontractorsPage() {
           description="Add a subcontractor to start assigning them to jobs and appointments."
         />
       ) : (
-        <div className="overflow-hidden rounded-lg border border-slate-200 bg-white">
+        <div className="overflow-hidden rounded-lg border border-ink-200 bg-white">
           <Table>
             <TableHeader>
               <TableRow>
@@ -47,8 +47,8 @@ export default async function SubcontractorsPage() {
               {subcontractors.map((s) => (
                 <TableRow key={s.id}>
                   <TableCell>
-                    <p className="font-medium text-slate-900">{s.name}</p>
-                    {s.company_name && <p className="text-xs text-slate-500">{s.company_name}</p>}
+                    <p className="font-medium text-ink-900">{s.name}</p>
+                    {s.company_name && <p className="text-xs text-ink-500">{s.company_name}</p>}
                   </TableCell>
                   <TableCell>{s.trade ?? "—"}</TableCell>
                   <TableCell>{[s.phone, s.email].filter(Boolean).join(" · ") || "—"}</TableCell>

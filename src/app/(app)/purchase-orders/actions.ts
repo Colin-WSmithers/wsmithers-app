@@ -27,12 +27,13 @@ export async function createPurchaseOrderAction(_prevState: FormState, formData:
     return { error: parsed.error.issues[0]?.message ?? "Please check the form and try again." };
   }
 
-  const items = parseLineItemRows(formData, {
+  const { rows: items, error: itemsError } = parseLineItemRows(formData, {
     description: "line_description",
     quantity: "line_quantity",
     unitPrice: "line_unit_price",
     vatRate: "line_vat_rate",
   });
+  if (itemsError) return { error: itemsError };
   if (items.length === 0) {
     return { error: "Add at least one line item." };
   }
@@ -65,7 +66,8 @@ export async function createPurchaseOrderAction(_prevState: FormState, formData:
     return { error: "Could not create the purchase order — please try again." };
   }
 
-  await supabase.from("purchase_order_items").insert(
+  // A PO sent to a supplier with no lines on it is worse than no PO at all.
+  const { error: itemsInsertError } = await supabase.from("purchase_order_items").insert(
     items.map((item) => ({
       purchase_order_id: po.id,
       description: item.description,
@@ -75,6 +77,10 @@ export async function createPurchaseOrderAction(_prevState: FormState, formData:
       line_total: item.line_total,
     }))
   );
+  if (itemsInsertError) {
+    await supabase.from("purchase_orders").delete().eq("id", po.id);
+    return { error: "Could not save the purchase order's line items — please try again." };
+  }
 
   revalidatePath("/purchase-orders");
   redirect(`/purchase-orders/${po.id}`);

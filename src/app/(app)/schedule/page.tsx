@@ -87,14 +87,14 @@ export default async function SchedulePage({
     <div className="flex flex-col gap-4">
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div>
-          <h1 className="text-lg font-semibold text-slate-900">Schedule</h1>
-          <p className="text-sm text-slate-500">{office ? "Every appointment across the crew." : "Your appointments this week."}</p>
+          <h1 className="page-title text-[1.375rem] leading-tight">Schedule</h1>
+          <p className="text-sm text-ink-500">{office ? "Every appointment across the crew." : "Your appointments this week."}</p>
         </div>
         <div className="flex items-center gap-2">
           <Button asChild size="sm" variant="outline">
             <Link href={`/schedule?week=${toDateKey(prevWeek)}`}><ChevronLeft className="h-4 w-4" /></Link>
           </Button>
-          <span className="text-sm font-medium text-slate-700">{weekLabel}</span>
+          <span className="text-sm font-medium text-ink-700">{weekLabel}</span>
           <Button asChild size="sm" variant="outline">
             <Link href={`/schedule?week=${toDateKey(nextWeek)}`}><ChevronRight className="h-4 w-4" /></Link>
           </Button>
@@ -118,35 +118,35 @@ export default async function SchedulePage({
           const dayAppointments = byDay.get(key) ?? [];
           const isToday = key === toDateKey(new Date());
           return (
-            <div key={key} className="flex flex-col gap-2 rounded-lg border border-slate-200 bg-white p-3">
-              <p className={`text-xs font-semibold uppercase tracking-wide ${isToday ? "text-blue-600" : "text-slate-400"}`}>
+            <div key={key} className="flex flex-col gap-2 rounded-lg border border-ink-200 bg-white p-3">
+              <p className={`text-xs font-semibold uppercase tracking-wide ${isToday ? "text-brand-600" : "text-ink-400"}`}>
                 {new Intl.DateTimeFormat("en-GB", { weekday: "short", day: "numeric", month: "short" }).format(day)}
               </p>
               {dayAppointments.length === 0 ? (
-                <p className="text-xs text-slate-300">—</p>
+                <p className="text-xs text-ink-300">—</p>
               ) : (
                 <div className="flex flex-col gap-2">
                   {dayAppointments.map((appt) => (
-                    <div key={appt.id} className="rounded-md border border-slate-100 bg-slate-50 p-2.5">
+                    <div key={appt.id} className="rounded-md border border-ink-100 bg-ink-50 p-2.5">
                       <div className="flex items-start justify-between gap-1">
-                        <p className="text-xs font-semibold text-slate-900">
+                        <p className="text-xs font-semibold text-ink-900">
                           {formatTime(appt.starts_at)}–{formatTime(appt.ends_at)}
                         </p>
                         {office && <DeleteAppointmentButton appointmentId={appt.id} />}
                       </div>
                       {appt.job && (
-                        <Link href={`/jobs/${appt.job.id}`} className="text-xs font-medium text-slate-800 hover:underline">
+                        <Link href={`/jobs/${appt.job.id}`} className="text-xs font-medium text-ink-800 hover:underline">
                           {appt.job.job_number} — {appt.job.job_name}
                         </Link>
                       )}
-                      {appt.title && <p className="text-xs text-slate-600">{appt.title}</p>}
+                      {appt.title && <p className="text-xs text-ink-600">{appt.title}</p>}
                       {appt.site && (
-                        <p className="mt-0.5 flex items-center gap-1 text-[11px] text-slate-400">
+                        <p className="mt-0.5 flex items-center gap-1 text-[11px] text-ink-400">
                           <MapPin className="h-3 w-3" /> {appt.site.address_line1}
                         </p>
                       )}
                       {appt.assignments.length > 0 && (
-                        <p className="mt-1 text-[11px] text-slate-500">
+                        <p className="mt-1 text-[11px] text-ink-500">
                           {appt.assignments.map((a) => a.profile?.full_name ?? a.subcontractor?.name).filter(Boolean).join(", ")}
                         </p>
                       )}

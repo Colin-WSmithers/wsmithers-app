@@ -109,6 +109,23 @@ export async function approveTimesheetAction(_prevState: FormState, formData: Fo
   }
 
   const supabase = await createClient();
+
+  // Four eyes: nobody signs off their own hours, office staff included.
+  const { data: sheet } = await supabase
+    .from("timesheets")
+    .select("profile_id, ended_at")
+    .eq("id", parsed.data.id)
+    .maybeSingle();
+  if (!sheet) {
+    return { error: "That timesheet no longer exists." };
+  }
+  if (sheet.profile_id === profile.id) {
+    return { error: "You can't approve your own hours — ask a colleague to check them." };
+  }
+  if (!sheet.ended_at) {
+    return { error: "That shift is still running — it can't be approved until it's clocked out." };
+  }
+
   const { error } = await supabase
     .from("timesheets")
     .update({ is_approved: true, approved_by: profile.id, approved_at: new Date().toISOString() })

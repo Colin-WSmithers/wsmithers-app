@@ -54,7 +54,7 @@ supabase link --project-ref <your-project-ref>
 supabase db push
 ```
 
-This runs the four migration files in `supabase/migrations/` in order:
+This runs the five migration files in `supabase/migrations/` in order:
 
 - `0001_init.sql` — every table, enum, index, trigger and Row Level Security policy for the
   whole application (all phases — the schema is built up front so later phases don't need
@@ -66,10 +66,27 @@ This runs the four migration files in `supabase/migrations/` in order:
   to a job, creating a task, scheduling an appointment, accepting a quote, the overdue-invoice
   cron) can create a notification row for *another* user — the original Phase 1 policy only ever
   let a user manage their own notifications.
-- `0004_daily_summaries.sql` — **new.** Adds the `daily_summaries` table the AI end-of-day
-  summary cron writes to, readable by office/admin only (see "AI end-of-day summary" below).
+- `0004_daily_summaries.sql` — Adds the `daily_summaries` table the AI end-of-day summary cron
+  writes to, readable by office/admin only (see "AI end-of-day summary" below).
+- `0005_security_and_integrity.sql` — **required.** Security and data-integrity fixes found in a
+  full backend audit. Three of them matter a great deal:
+  - `next_document_number()` had no `security definer`, so it ran as the caller. Only admins can
+    write `company_settings`, so for an **office** user the counter update silently matched zero
+    rows and the function returned NULL — meaning office staff could not create a single job,
+    quote, invoice or purchase order. Admins were unaffected, which is why it survives casual
+    testing.
+  - `profiles_update_self` had no `WITH CHECK`, so Postgres reused the `USING` clause as the
+    check and left the `role` column unconstrained. Since the anon key is (by design) in the
+    client bundle, any signed-in tradesperson could have promoted themselves to admin with a
+    single REST call.
+  - `is_active` was written by the Staff screen but never read anywhere, so deactivating someone
+    revoked nothing — a sacked employee kept full access until their password changed.
 
-If you already ran `0001`/`0002`/`0003` for an earlier phase, you only need to run `0004` now.
+  It also stops crew self-approving timesheets, adds money constraints (no negative quantities or
+  >100% VAT), makes one quote convertible to exactly one job, and scopes Storage writes to a job
+  the uploader can actually see.
+
+If you already ran `0001`–`0004` for an earlier phase, you only need to run `0005` now.
 
 If you'd rather not install the CLI, paste the contents of the files into the Supabase
 dashboard's **SQL Editor** and run them in order instead.
@@ -234,6 +251,30 @@ supabase/
   seed/                     Realistic UK demo data
 ```
 
+## Design system
+
+The interface is built around the company's own identity rather than a generic admin theme. The
+brand terracotta is lifted straight from the logo (`#c63e29`, exposed as the `brand-*` scale in
+`src/app/globals.css`), and the neutral ramp is a warm stone (`ink-*`) rather than the cool
+blue-grey most component libraries ship with, so the two sit together instead of fighting.
+
+Type is Outfit for display (page titles, figures, the small letter-spaced uppercase "eyebrow"
+labels that echo the `EST. 1955` lockup) over Inter for everything else. Both are self-hosted via
+`@fontsource-variable/*` npm packages rather than `next/font/google`, so there's no build-time
+fetch to Google and no third-party request at runtime.
+
+The logo assets live in `public/`: `logo.png` is the full lockup used on the login screen, and
+`mark.png` is the monogram alone, used in the sidebar, the mobile header and as the favicon.
+
+Shared building blocks worth knowing about:
+
+- `components/shared/page-header.tsx` — the standard masthead (eyebrow / title / description /
+  actions slot) used across pages.
+- `components/shared/stat-card.tsx` — KPI tile with tonal variants (`default`, `brand`, `warning`,
+  `danger`) and tabular figures.
+- `components/shared/logo.tsx` — `LogoMark` and `LogoLockup`.
+- The `.eyebrow`, `.page-title` and `.tnum` utility classes in `globals.css`.
+
 ## A note on the shadcn/ui components
 
 The `shadcn` CLI registry (`ui.shadcn.com`) wasn't reachable from the sandbox this was built in,
@@ -264,10 +305,21 @@ Phases 4 and 5 use tables and Storage buckets that were already created by the t
 you ran during setup (`0001_init.sql` and `0002_storage_and_numbering.sql`) — there's nothing new
 to run in the Supabase SQL Editor for those two phases.
 
+## Timezone handling
+
+The server and database run in UTC but the business runs in UK local time, and the UK is on BST
+(UTC+1) for roughly seven months of the year. Deriving "today" from `toISOString()` or
+`setHours(0,0,0,0)` therefore puts the day boundary an hour late all summer: a shift clocked at
+00:30 BST would be counted against the previous day. Every day/week/month boundary in the app goes
+through the `london*` helpers in `src/lib/utils.ts` instead, which pin boundaries to actual London
+local time and handle both DST changeover days (the 23-hour and 25-hour days) correctly.
+
 ## Database changes for Phase 7 and the AI summary
 
 Phase 6 needs no new SQL — it only uses tables already created by `0001_init.sql`. Phase 7 needs
-`0003_notifications_policy.sql`, and the AI end-of-day summary needs `0004_daily_summaries.sql`
-(see step 2 above) — run whichever of those you haven't already in the SQL Editor, then redeploy
-the updated code (push to GitHub — Vercel will rebuild automatically) and add the environment
+`0003_notifications_policy.sql`, the AI end-of-day summary needs `0004_daily_summaries.sql`, and
+`0005_security_and_integrity.sql` is required for the app to work correctly for office staff at
+all (see step 2 above) — run whichever of those you haven't already in the SQL Editor, then
+redeploy the updated code (push to GitHub — Vercel will rebuild automatically) and add the
+environment
 variables described in "Overdue invoice cron" and "AI end-of-day summary" above.

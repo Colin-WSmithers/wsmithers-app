@@ -1,5 +1,6 @@
 import "server-only";
 import { createClient } from "@/lib/supabase/server";
+import { londonDateKey, londonDayRange, londonDaySpan } from "@/lib/utils";
 import type { DailySummary } from "@/lib/supabase/types";
 
 /**
@@ -39,12 +40,11 @@ export interface DashboardData {
  */
 export async function getDashboardData(): Promise<DashboardData> {
   const supabase = await createClient();
-  const todayStart = new Date();
-  todayStart.setHours(0, 0, 0, 0);
-  const todayEnd = new Date(todayStart);
-  todayEnd.setDate(todayEnd.getDate() + 1);
-  const weekEnd = new Date(todayStart);
-  weekEnd.setDate(weekEnd.getDate() + 7);
+  // Day/week windows are pinned to London local time, not the server's UTC
+  // clock — otherwise during BST an 00:30 appointment counts as yesterday.
+  const todayKey = londonDateKey();
+  const { start: todayStart, end: todayEnd } = londonDayRange(todayKey);
+  const { end: weekEnd } = londonDaySpan(todayKey, 7);
 
   const [
     jobsToday,

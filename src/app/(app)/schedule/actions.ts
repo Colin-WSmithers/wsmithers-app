@@ -72,7 +72,13 @@ export async function createAppointmentAction(_prevState: FormState, formData: F
     })),
   ];
   if (assignmentRows.length > 0) {
-    await supabase.from("appointment_assignments").insert(assignmentRows);
+    const { error: assignError } = await supabase.from("appointment_assignments").insert(assignmentRows);
+    if (assignError) {
+      // Without this the crew get "you've been assigned" notifications for an
+      // appointment that never shows on their Today screen.
+      await supabase.from("appointments").delete().eq("id", appointment.id);
+      return { error: "Could not assign the crew to this appointment — please try again." };
+    }
   }
 
   if (parsed.data.assigned_staff.length > 0) {
