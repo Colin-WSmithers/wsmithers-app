@@ -79,6 +79,30 @@ export async function createAppointmentAction(_prevState: FormState, formData: F
       await supabase.from("appointments").delete().eq("id", appointment.id);
       return { error: "Could not assign the crew to this appointment — please try again." };
     }
+
+    // Being scheduled onto an appointment must also grant access to the job
+    // itself — otherwise the crew see the appointment on their Today screen
+    // but can't open the job, post a note, or clock in on it (all of those
+    // are gated on job_assignments, not appointment_assignments). Only add
+    // rows for people who aren't already assigned to this job.
+    const { data: existing } = await supabase
+      .from("job_assignments")
+      .select("profile_id, subcontractor_id")
+      .eq("job_id", parsed.data.job_id);
+    const existingProfileIds = new Set((existing ?? []).map((a) => a.profile_id).filter(Boolean));
+    const existingSubcontractorIds = new Set((existing ?? []).map((a) => a.subcontractor_id).filter(Boolean));
+
+    const newJobAssignments = [
+      ...parsed.data.assigned_staff
+        .filter((profileId) => !existingProfileIds.has(profileId))
+        .map((profileId) => ({ job_id: parsed.data.job_id, profile_id: profileId })),
+      ...parsed.data.assigned_subcontractors
+        .filter((subcontractorId) => !existingSubcontractorIds.has(subcontractorId))
+        .map((subcontractorId) => ({ job_id: parsed.data.job_id, subcontractor_id: subcontractorId })),
+    ];
+    if (newJobAssignments.length > 0) {
+      await supabase.from("job_assignments").insert(newJobAssignments);
+    }
   }
 
   if (parsed.data.assigned_staff.length > 0) {

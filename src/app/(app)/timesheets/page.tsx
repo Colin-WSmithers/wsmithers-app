@@ -11,9 +11,14 @@ import { ShiftTimerCard } from "./shift-timer-card";
 import { ManualEntryDialog } from "./manual-entry-dialog";
 import { ApproveButton } from "./approve-button";
 
-export default async function TimesheetsPage() {
+export default async function TimesheetsPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ job?: string }>;
+}) {
   const profile = await requireProfile();
   const office = isOfficeOrAdmin(profile.role);
+  const { job: defaultJobId } = await searchParams;
 
   const [myJobs, openShift, myTimesheets, allTimesheets] = await Promise.all([
     listJobs(),
@@ -34,6 +39,7 @@ export default async function TimesheetsPage() {
       <ShiftTimerCard
         openShift={openShift}
         jobs={myJobs.map((j) => ({ id: j.id, job_number: j.job_number, job_name: j.job_name }))}
+        defaultJobId={defaultJobId}
       />
 
       <Card>

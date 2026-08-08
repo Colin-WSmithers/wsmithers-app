@@ -10,16 +10,29 @@ import { notifyProfile, notifyProfiles } from "@/lib/data/notifications";
 
 export interface FormState {
   error?: string;
+  values?: Record<string, string | string[]>;
 }
 
 function emptyToNull(value: string | undefined) {
   return value && value.trim() !== "" ? value : null;
 }
 
+/** Echo submitted fields back so the form can restore them after a failed submit,
+ * instead of the page re-render wiping everything the user typed. */
+function valuesFromFormData(formData: FormData): Record<string, string | string[]> {
+  const values: Record<string, string | string[]> = {};
+  for (const key of new Set(formData.keys())) {
+    const all = formData.getAll(key);
+    values[key] = all.length > 1 ? all.map(String) : String(all[0] ?? "");
+  }
+  return values;
+}
+
 export async function createJobAction(_prevState: FormState, formData: FormData): Promise<FormState> {
   const profile = await requireProfile();
+  const values = valuesFromFormData(formData);
   if (!isOfficeOrAdmin(profile.role)) {
-    return { error: "You do not have permission to create jobs." };
+    return { error: "You do not have permission to create jobs.", values };
   }
 
   const raw = Object.fromEntries(formData.entries());
@@ -28,7 +41,7 @@ export async function createJobAction(_prevState: FormState, formData: FormData)
     assigned_staff: formData.getAll("assigned_staff"),
   });
   if (!parsed.success) {
-    return { error: parsed.error.issues[0]?.message ?? "Please check the form and try again." };
+    return { error: parsed.error.issues[0]?.message ?? "Please check the form and try again.", values };
   }
 
   const supabase = await createClient();
@@ -37,7 +50,7 @@ export async function createJobAction(_prevState: FormState, formData: FormData)
     p_kind: "job",
   });
   if (numberError || !jobNumber) {
-    return { error: "Could not generate a job number — please try again." };
+    return { error: "Could not generate a job number — please try again.", values };
   }
 
   const { data: job, error } = await supabase
@@ -58,7 +71,7 @@ export async function createJobAction(_prevState: FormState, formData: FormData)
     .single();
 
   if (error || !job) {
-    return { error: "Could not create the job — please try again." };
+    return { error: "Could not create the job — please try again.", values };
   }
 
   if (parsed.data.assigned_staff.length > 0) {

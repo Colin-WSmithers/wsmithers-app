@@ -39,7 +39,15 @@ export function JobForm({
   defaultCustomerId?: string;
 }) {
   const [state, formAction, pending] = useActionState(createJobAction, initialState);
-  const [customerId, setCustomerId] = useState(defaultCustomerId ?? "");
+  // If a submit failed, restore what was typed instead of the customer picker
+  // (and everything else) coming back blank.
+  const restored = state.values;
+  const restoredStaff = new Set(
+    restored?.assigned_staff ? (Array.isArray(restored.assigned_staff) ? restored.assigned_staff : [restored.assigned_staff]) : []
+  );
+  const [customerId, setCustomerId] = useState(
+    (restored?.customer_id as string | undefined) ?? defaultCustomerId ?? ""
+  );
 
   const sitesForCustomer = useMemo(
     () => sites.filter((s) => s.customer_id === customerId),
@@ -55,12 +63,19 @@ export function JobForm({
         <CardContent className="grid grid-cols-1 gap-4 sm:grid-cols-2">
           <div className="sm:col-span-2">
             <Label htmlFor="job_name">Job name</Label>
-            <Input id="job_name" name="job_name" required placeholder="e.g. Kitchen Renovation" className="mt-1.5" />
+            <Input
+              id="job_name"
+              name="job_name"
+              required
+              placeholder="e.g. Kitchen Renovation"
+              className="mt-1.5"
+              defaultValue={(restored?.job_name as string | undefined) ?? ""}
+            />
           </div>
 
           <div className="flex flex-col gap-1.5">
             <Label htmlFor="customer_id">Customer</Label>
-            <Select name="customer_id" defaultValue={defaultCustomerId} onValueChange={setCustomerId} required>
+            <Select name="customer_id" defaultValue={customerId || undefined} onValueChange={setCustomerId} required>
               <SelectTrigger id="customer_id"><SelectValue placeholder="Choose a customer" /></SelectTrigger>
               <SelectContent>
                 {customers.map((c) => (
@@ -72,7 +87,11 @@ export function JobForm({
 
           <div className="flex flex-col gap-1.5">
             <Label htmlFor="site_id">Site</Label>
-            <Select name="site_id" disabled={!customerId || sitesForCustomer.length === 0}>
+            <Select
+              name="site_id"
+              defaultValue={(restored?.site_id as string | undefined) || undefined}
+              disabled={!customerId || sitesForCustomer.length === 0}
+            >
               <SelectTrigger id="site_id">
                 <SelectValue placeholder={customerId ? "Choose a site (optional)" : "Choose a customer first"} />
               </SelectTrigger>
@@ -89,12 +108,18 @@ export function JobForm({
 
           <div className="sm:col-span-2">
             <Label htmlFor="description">Description</Label>
-            <Textarea id="description" name="description" rows={3} className="mt-1.5" />
+            <Textarea
+              id="description"
+              name="description"
+              rows={3}
+              className="mt-1.5"
+              defaultValue={(restored?.description as string | undefined) ?? ""}
+            />
           </div>
 
           <div className="flex flex-col gap-1.5">
             <Label htmlFor="status">Status</Label>
-            <Select name="status" defaultValue="draft">
+            <Select name="status" defaultValue={(restored?.status as string | undefined) ?? "draft"}>
               <SelectTrigger id="status"><SelectValue /></SelectTrigger>
               <SelectContent>
                 {JOB_STATUSES.map((s) => (
@@ -108,20 +133,44 @@ export function JobForm({
 
           <div className="flex flex-col gap-1.5">
             <Label htmlFor="start_date">Start date</Label>
-            <Input id="start_date" name="start_date" type="date" />
+            <Input
+              id="start_date"
+              name="start_date"
+              type="date"
+              defaultValue={(restored?.start_date as string | undefined) ?? ""}
+            />
           </div>
           <div className="flex flex-col gap-1.5">
             <Label htmlFor="expected_completion_date">Expected completion</Label>
-            <Input id="expected_completion_date" name="expected_completion_date" type="date" />
+            <Input
+              id="expected_completion_date"
+              name="expected_completion_date"
+              type="date"
+              defaultValue={(restored?.expected_completion_date as string | undefined) ?? ""}
+            />
           </div>
 
           <div className="flex flex-col gap-1.5">
             <Label htmlFor="estimated_value">Estimated value (£)</Label>
-            <Input id="estimated_value" name="estimated_value" type="number" step="0.01" min="0" />
+            <Input
+              id="estimated_value"
+              name="estimated_value"
+              type="number"
+              step="0.01"
+              min="0"
+              defaultValue={(restored?.estimated_value as string | undefined) ?? ""}
+            />
           </div>
           <div className="flex flex-col gap-1.5">
             <Label htmlFor="estimated_cost">Estimated cost (£)</Label>
-            <Input id="estimated_cost" name="estimated_cost" type="number" step="0.01" min="0" />
+            <Input
+              id="estimated_cost"
+              name="estimated_cost"
+              type="number"
+              step="0.01"
+              min="0"
+              defaultValue={(restored?.estimated_cost as string | undefined) ?? ""}
+            />
           </div>
         </CardContent>
       </Card>
@@ -138,7 +187,13 @@ export function JobForm({
             <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
               {staff.map((s) => (
                 <label key={s.id} className="flex items-center gap-2 rounded-md border border-ink-200 px-3 py-2 text-sm text-ink-700">
-                  <input type="checkbox" name="assigned_staff" value={s.id} className="h-4 w-4 rounded border-ink-300" />
+                  <input
+                    type="checkbox"
+                    name="assigned_staff"
+                    value={s.id}
+                    defaultChecked={restoredStaff.has(s.id)}
+                    className="h-4 w-4 rounded border-ink-300"
+                  />
                   {s.full_name}
                 </label>
               ))}
